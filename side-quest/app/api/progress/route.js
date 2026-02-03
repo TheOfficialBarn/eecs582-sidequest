@@ -29,7 +29,7 @@ function getUserFromRequest(req) {
 // GET: Retrieve all progress for the current user
 export async function GET(req) {
 	const user = getUserFromRequest(req);
-	
+
 	if (!user) {
 		return new Response(
 			JSON.stringify({ message: "Unauthorized" }),
@@ -106,7 +106,7 @@ export async function GET(req) {
 // POST: Save or update quest progress
 export async function POST(req) {
 	const user = getUserFromRequest(req);
-	
+
 	if (!user) {
 		return new Response(
 			JSON.stringify({ message: "Unauthorized" }),
@@ -143,7 +143,7 @@ export async function POST(req) {
 	// Then find the quest_id by location_id and quest text
 	const { data: quest, error: questError } = await supabase
 		.from("quests")
-		.select("quest_id")
+		.select("quest_id, is_multiplayer, reward_points")
 		.eq("location_id", location.location_id)
 		.eq("text", quest_text)
 		.single();
@@ -186,7 +186,7 @@ export async function POST(req) {
 			.eq("progress_id", existingProgress.progress_id)
 			.select()
 			.single();
-		
+
 		result = { data, error };
 	} else {
 		// Insert new progress
@@ -195,7 +195,7 @@ export async function POST(req) {
 			.insert([progressData])
 			.select()
 			.single();
-		
+
 		result = { data, error };
 	}
 
@@ -205,6 +205,56 @@ export async function POST(req) {
 			JSON.stringify({ message: "Failed to save progress", error: result.error.message }),
 			{ status: 500, headers: { "Content-Type": "application/json" } }
 		);
+	}
+
+	// Try to claim quest (handles multiplayer logic)
+	// If it's a multiplayer quest, this RPC returns false if already claimed.
+	// If it's a normal quest, it returns true immediately.
+	const { data: claimSuccess, error: claimError } = await supabase.rpc('claim_quest', {
+		p_quest_id: quest.quest_id,
+		p_user_id: user.id
+	});
+
+	if (claimError) {
+		console.error("RPC Error:", claimError);
+		// If RPC fails (e.g. function doesn't exist), fall back to normal flow below
+	} else if (claimSuccess === false) {
+		// Only happens if multiplayer quest is already won by someone else
+		return new Response(
+			JSON.stringify({ message: "This quest has already been claimed by another player!" }),
+			{ status: 409, headers: { "Content-Type": "application/json" } }
+		);
+	}
+
+	// Calculate points to award (default 100 if not specified in quest)
+	const pointsToAward = quest.reward_points || 100;
+
+	// Award points if completing the quest for the first time
+	// Note: If claim_quest RPC succeeded for a multiplayer quest, points are ALREADY awarded by the RPC.
+	// We need to avoid double counting.
+	const isMultiplayer = quest.is_multiplayer;
+
+	if (!isMultiplayer && completed && (!existingProgress || !existingProgress.completed)) {
+		// Increment points for NORMAL quests
+		const { error: pointsError } = await supabase.rpc('increment_points', {
+			user_id: user.id,
+			amount: pointsToAward
+		});
+
+		// Fallback to direct update if RPC doesn't exist
+		if (pointsError) {
+			const { data: userData } = await supabase
+				.from('users')
+				.select('points')
+				.eq('user_id', user.id)
+				.single();
+
+			const currentPoints = userData?.points || 0;
+			await supabase
+				.from('users')
+				.update({ points: currentPoints + pointsToAward })
+				.eq('user_id', user.id);
+		}
 	}
 
 	// Success.

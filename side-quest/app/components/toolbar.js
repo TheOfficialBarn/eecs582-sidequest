@@ -18,7 +18,7 @@ export default async function Toolbar() {
 	// Check if user is logged in.
 	const cookieStore = await cookies();
 	const token = cookieStore.get("sid")?.value;
-	
+
 	// Verify the token to get user info; null if not authenticated
 	const decoded = token ? verifyToken(token) : null;
 	let user = decoded ? { ...decoded } : null;
@@ -29,7 +29,7 @@ export default async function Toolbar() {
 			// Get user information from db
 			const supabase = createAdminClient();
 			const userId = user.id;
-			let q = supabase.from("users").select("user_id, is_admin, name, email").limit(1);
+			let q = supabase.from("users").select("user_id, is_admin, name, email, points").limit(1);
 
 			q = q.eq("user_id", userId);
 
@@ -42,6 +42,7 @@ export default async function Toolbar() {
 					name: data.name ?? user.name,
 					email: data.email ?? user.email,
 					is_admin: !!data.is_admin,
+					points: data.points || 0,
 				};
 			} else {
 				// add default is_admin value

@@ -13,7 +13,8 @@ import { requireAuthOrRedirect } from "@/lib/requireAuth";
 import { cookies } from "next/headers";
 import { verifyToken } from "../../lib/auth";
 import { createAdminClient } from "../../lib/supabase/admin";
-import { CheckCircle2, MapPin, Trophy } from "lucide-react";
+import { CheckCircle2, MapPin, Trophy, Edit2, Coins } from "lucide-react";
+import Link from "next/link";
 
 export default async function AccountPage() {
 	// redirect if not authenticated
@@ -36,6 +37,16 @@ export default async function AccountPage() {
 	}
 
 	const supabase = createAdminClient();
+
+	// Fetch refreshed user data to get profile picture and points
+	const { data: dbUser } = await supabase
+		.from("users")
+		.select("profile_picture_url, points")
+		.eq("user_id", user.id)
+		.single();
+
+	const profilePicture = dbUser?.profile_picture_url || "https://api.dicebear.com/9.x/avataaars/svg?seed=Default";
+	const points = dbUser?.points || 0;
 
 	// Get all quests to calculate total
 	const { data: allQuests } = await supabase
@@ -70,7 +81,7 @@ export default async function AccountPage() {
 		// normalize nested quest data
 		const quest = Array.isArray(p.quests) ? p.quests[0] : p.quests;
 		if (!quest) return;
-		
+
 		// normalize nested location data
 		const location = Array.isArray(quest.locations) ? quest.locations[0] : quest.locations;
 		if (!location) return;
@@ -81,7 +92,7 @@ export default async function AccountPage() {
 		if (!completedByLocation[locationName]) {
 			completedByLocation[locationName] = [];
 		}
-		
+
 		// store quest info under its location
 		completedByLocation[locationName].push({
 			text: quest.text,
@@ -101,14 +112,45 @@ export default async function AccountPage() {
 			{/* Account Info Section */}
 			<div className="mb-8 text-[#FF7A00]">
 				<h2 className="text-3xl font-bold mb-4">Account</h2>
-				<div className="bg-white rounded-lg shadow-md p-6 mb-6">
-					<p className="mb-2"><strong>Email:</strong> {user.email}</p>
-					<p className="mb-4"><strong>Name:</strong> {user.name || "-"}</p>
-					<form action="/api/auth/logout" method="post">
-						<button className="px-4 py-2 border-2 border-[#FF7A00] rounded-lg cursor-pointer hover:bg-[#FF7A00] hover:text-white transition-all duration-200 font-semibold">
-							Logout
-						</button>
-					</form>
+				<div className="bg-white rounded-lg shadow-md p-6 mb-6 flex flex-col md:flex-row items-center gap-6">
+					<div className="relative group">
+						<img
+							src={profilePicture}
+							alt="Profile"
+							className="w-32 h-32 rounded-full border-4 border-[#FF7A00] object-cover bg-gray-100"
+						/>
+						<Link
+							href="/shop"
+							className="absolute bottom-0 right-0 bg-[#00AEEF] text-white p-2 rounded-full shadow-lg hover:bg-[#0096D6] transition-transform hover:scale-110"
+							title="Customize Avatar"
+						>
+							<Edit2 className="w-4 h-4" />
+						</Link>
+					</div>
+
+					<div className="flex-1 text-center md:text-left">
+						<div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-4">
+							<div>
+								<p className="mb-2 text-lg text-gray-800"><strong>Email:</strong> {user.email}</p>
+								<p className="mb-4 text-lg text-gray-800"><strong>Name:</strong> {user.name || "-"}</p>
+							</div>
+							<div className="bg-[#FFF6D8] p-4 rounded-xl border-2 border-[#FFDA00] flex flex-col items-center min-w-[120px]">
+								<div className="text-[#FF7A00] font-bold text-sm uppercase tracking-wide">Balance</div>
+								<div className="flex items-center gap-2 text-2xl font-black text-gray-800 mt-1">
+									<Coins className="w-6 h-6 text-[#FFDA00]" fill="#FFDA00" />
+									{points}
+								</div>
+							</div>
+						</div>
+
+						<div className="mt-4 flex justify-center md:justify-start">
+							<form action="/api/auth/logout" method="post">
+								<button className="px-6 py-2 border-2 border-[#FF7A00] rounded-lg cursor-pointer hover:bg-[#FF7A00] hover:text-white transition-all duration-200 font-semibold text-[#FF7A00]">
+									Logout
+								</button>
+							</form>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -118,7 +160,7 @@ export default async function AccountPage() {
 					<Trophy className="w-8 h-8" />
 					Quest Progress
 				</h2>
-				
+
 				{/* Statistics Card */}
 				<div className="bg-gradient-to-r from-[#00AEEF] to-[#0096D6] text-white rounded-lg shadow-lg p-6 mb-6">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -178,8 +220,8 @@ export default async function AccountPage() {
 						<Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
 						<p className="text-lg text-gray-600 mb-2">No quests completed yet!</p>
 						<p className="text-sm text-gray-500">Start exploring the map to complete your first quest.</p>
-						<a 
-							href="/map" 
+						<a
+							href="/map"
 							className="inline-block mt-4 px-6 py-2 bg-[#00AEEF] text-white rounded-lg hover:bg-[#0096D6] transition-colors font-semibold"
 						>
 							Go to Map

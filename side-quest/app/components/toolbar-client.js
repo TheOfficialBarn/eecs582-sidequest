@@ -13,7 +13,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Map, Compass, Trophy, User, LogOut, Menu, Brain, X } from "lucide-react";
+import { Map, Compass, Trophy, User, LogOut, Menu, Brain, X, ShoppingBag, Coins, Lightbulb, Swords } from "lucide-react";
 import NotificationButton from "./NotificationButton";
 
 /*
@@ -61,13 +61,15 @@ export default function ToolbarClient({ user }) {
 					<span className="text-[#FFDA00] group-hover:text-white transition-colors duration-200"> Quest</span>
 				</span>
 			</Link>
-			
-			{/* Navigation Links - Always visible */}
-			<div className="hidden md:flex gap-6 text-lg font-semibold">
+
+			{/* Navigation Links - Always visible on large screens */}
+			<div className="hidden md:flex items-center gap-1 xl:gap-6 text-sm lg:text-lg font-semibold">
 				<Link href="/map" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Map className="w-5 h-5" /> Map</Link>
 				<Link href="/quests" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Compass className="w-5 h-5" /> Quests</Link>
 				<Link href="/leaderboard" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Trophy className="w-5 h-5" /> Leaderboard</Link>
-				<Link href="/account" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <User className="w-5 h-5" /> Account</Link>
+				<Link href="/shop" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <ShoppingBag className="w-5 h-5" /> Shop</Link>
+				<Link href="/multiplayer" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Swords className="w-5 h-5" /> Multiplayer</Link>
+				<div title="Coming Soon" className="hidden xl:flex group items-center gap-2 px-3 py-2 rounded-lg opacity-60 cursor-not-allowed"> <Lightbulb className="w-5 h-5" /> GeoThinkr</div>
 				{/* Admin tab is only visible if user is admin*/}
 				{user?.is_admin && (
 					<Link href="/admin" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Brain className="w-5 h-5" /> Admin </Link>
@@ -89,10 +91,14 @@ export default function ToolbarClient({ user }) {
 
 				{user ? (
 					<>
-						<div className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm">
+						<div className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm mr-2 text-[#FFDA00] font-bold border border-[#FFDA00]/30">
+							<Coins className="w-4 h-4" />
+							<span>{user.points || 0}</span>
+						</div>
+						<Link href="/account" className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all cursor-pointer">
 							<User className="w-4 h-4" />
 							<span>{user.name || user.email}</span>
-						</div>
+						</Link>
 						<form action="/api/auth/logout" method="post">
 							<button type="submit" className="bg-transparent hover:bg-[#00AEEF] text-white p-3 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center group" title="Logout">
 								<LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -113,7 +119,9 @@ export default function ToolbarClient({ user }) {
 						<Link href="/map" className="px-3 py-2 rounded-md hover:bg-gray-100">Map</Link>
 						<Link href="/quests" className="px-3 py-2 rounded-md hover:bg-gray-100">Quests</Link>
 						<Link href="/leaderboard" className="px-3 py-2 rounded-md hover:bg-gray-100">Leaderboard</Link>
-						<Link href="/account" className="px-3 py-2 rounded-md hover:bg-gray-100">Account</Link>
+						<Link href="/shop" className="px-3 py-2 rounded-md hover:bg-gray-100">Shop</Link>
+						<Link href="/multiplayer" className="px-3 py-2 rounded-md hover:bg-gray-100">Multiplayer</Link>
+						<div className="px-3 py-2 rounded-md hover:bg-gray-100 opacity-60">GeoThinkr (Coming Soon)</div>
 						{/* Admin tab is only visible if user is admin*/}
 						{user?.is_admin && (
 							<Link href="/admin" className="px-3 py-2 rounded-md hover:bg-gray-100 font-medium">Admin</Link>
@@ -121,12 +129,12 @@ export default function ToolbarClient({ user }) {
 						<div className="border-t mt-2 pt-2">
 							{user ? (
 								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3">
+									<Link href="/account" className="flex items-center gap-3 hover:text-[#FFDA00] transition-colors">
 										<User className="w-5 h-5" />
 										<div>
 											<div className="font-medium">{user.name || user.email}</div>
 										</div>
-									</div>
+									</Link>
 									<form action="/api/auth/logout" method="post">
 										<button type="submit" className="px-3 py-2 rounded-md bg-[#FF7A00] text-white">Logout</button>
 									</form>
