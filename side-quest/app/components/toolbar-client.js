@@ -50,6 +50,21 @@ export default function ToolbarClient({ user }) {
 		};
 	}, [mobileOpen]);
 
+	// Animation for points change
+	const [pointsChanged, setPointsChanged] = useState(false);
+	const prevPoints = useRef(user?.points || 0);
+
+	useEffect(() => {
+		if (user?.points > prevPoints.current) {
+			setPointsChanged(true);
+			const t = setTimeout(() => setPointsChanged(false), 2000); // 2s highlight
+			prevPoints.current = user.points;
+			return () => clearTimeout(t);
+		}
+		// Sync if it decreases (no animation) or first load
+		prevPoints.current = user?.points || 0;
+	}, [user?.points]);
+
 	return (
 		<nav className="sticky top-0 z-50 flex items-center justify-between bg-gradient-to-r from-[#00AEEF] to-[#0096D6] text-white px-4 md:px-8 py-3 shadow-lg">
 			<Link href="/" className="flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">
@@ -91,8 +106,8 @@ export default function ToolbarClient({ user }) {
 
 				{user ? (
 					<>
-						<div className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm mr-2 text-[#FFDA00] font-bold border border-[#FFDA00]/30">
-							<Coins className="w-4 h-4" />
+						<div className={`hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm mr-2 font-bold border border-[#FFDA00]/30 transition-all duration-500 ${pointsChanged ? "bg-green-500/20 text-green-300 scale-110 border-green-400" : "text-[#FFDA00]"}`}>
+							<Coins className={`w-4 h-4 ${pointsChanged ? "animate-spin" : ""}`} />
 							<span>{user.points || 0}</span>
 						</div>
 						<Link href="/account" className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all cursor-pointer">
