@@ -1,0 +1,28 @@
+table_name,column_name,data_type,is_nullable,column_default
+locations,location_id,uuid,NO,gen_random_uuid()
+locations,name,character varying,NO,null
+locations,type,character varying,YES,null
+locations,x_coordinate,integer,YES,null
+locations,y_coordinate,integer,YES,null
+locations,created_at,timestamp with time zone,YES,now()
+locations,updated_at,timestamp with time zone,YES,now()
+progress,progress_id,uuid,NO,gen_random_uuid()
+progress,user_id,uuid,NO,null
+progress,quest_id,uuid,NO,null
+progress,completed,boolean,YES,false
+progress,completed_at,timestamp with time zone,YES,null
+progress,created_at,timestamp with time zone,YES,now()
+progress,updated_at,timestamp with time zone,YES,now()
+quests,quest_id,uuid,NO,gen_random_uuid()
+quests,location_id,uuid,NO,null
+quests,text,text,NO,null
+quests,created_at,timestamp with time zone,YES,now()
+quests,updated_at,timestamp with time zone,YES,now()
+quests,dependency,uuid,YES,null
+users,user_id,uuid,NO,gen_random_uuid()
+users,name,text,NO,null
+users,email,text,NO,null
+users,password_hash,text,NO,null
+users,created_at,timestamp with time zone,YES,now()
+users,is_admin,boolean,NO,false
+users,profile_picture_url,text,YES,null

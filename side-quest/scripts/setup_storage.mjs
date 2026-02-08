@@ -38,7 +38,7 @@ async function setupStorage() {
 		console.log("Creating 'avatars' bucket...");
 		const { data, error } = await supabase.storage.createBucket('avatars', {
 			public: true,
-			fileSizeLimit: 1024 * 1024 * 2, // 2MB
+			fileSizeLimit: 2097152, // 2MB
 			allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif']
 		});
 
@@ -46,6 +46,25 @@ async function setupStorage() {
 			console.error("Error creating bucket:", error);
 		} else {
 			console.log("Bucket 'avatars' created successfully.");
+		}
+	}
+
+	const guesserBucket = buckets.find(b => b.name === 'geothinkr-images');
+
+	if (guesserBucket) {
+		console.log("Bucket 'geothinkr-images' already exists.");
+	} else {
+		console.log("Creating 'geothinkr-images' bucket...");
+		const { data, error } = await supabase.storage.createBucket('geothinkr-images', {
+			public: true,
+			fileSizeLimit: 5242880, // 5MB limit for high-res photos
+			allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp']
+		});
+
+		if (error) {
+			console.error("Error creating bucket:", error);
+		} else {
+			console.log("Bucket 'geothinkr-images' created successfully.");
 		}
 	}
 }

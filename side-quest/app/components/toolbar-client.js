@@ -69,7 +69,7 @@ export default function ToolbarClient({ user }) {
 				<Link href="/leaderboard" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Trophy className="w-5 h-5" /> Leaderboard</Link>
 				<Link href="/shop" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <ShoppingBag className="w-5 h-5" /> Shop</Link>
 				<Link href="/multiplayer" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Swords className="w-5 h-5" /> Multiplayer</Link>
-				<div title="Coming Soon" className="hidden xl:flex group items-center gap-2 px-3 py-2 rounded-lg opacity-60 cursor-not-allowed"> <Lightbulb className="w-5 h-5" /> GeoThinkr</div>
+				<Link href="/geothinkr" className="hidden xl:flex group items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Lightbulb className="w-5 h-5" /> GeoThinkr</Link>
 				{/* Admin tab is only visible if user is admin*/}
 				{user?.is_admin && (
 					<Link href="/admin" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Brain className="w-5 h-5" /> Admin </Link>
@@ -121,7 +121,7 @@ export default function ToolbarClient({ user }) {
 						<Link href="/leaderboard" className="px-3 py-2 rounded-md hover:bg-gray-100">Leaderboard</Link>
 						<Link href="/shop" className="px-3 py-2 rounded-md hover:bg-gray-100">Shop</Link>
 						<Link href="/multiplayer" className="px-3 py-2 rounded-md hover:bg-gray-100">Multiplayer</Link>
-						<div className="px-3 py-2 rounded-md hover:bg-gray-100 opacity-60">GeoThinkr (Coming Soon)</div>
+						<Link href="/geothinkr" className="px-3 py-2 rounded-md hover:bg-gray-100">GeoThinkr</Link>
 						{/* Admin tab is only visible if user is admin*/}
 						{user?.is_admin && (
 							<Link href="/admin" className="px-3 py-2 rounded-md hover:bg-gray-100 font-medium">Admin</Link>

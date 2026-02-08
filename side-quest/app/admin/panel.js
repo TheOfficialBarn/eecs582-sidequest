@@ -13,10 +13,15 @@
 
 import { useState, useMemo } from "react";
 
-export default function AdminPanel({ initialLocations = [], initialQuests = [] }) {
+export default function AdminPanel({ initialLocations = [], initialQuests = [], initialGeoPhotos = [] }) {
+	const MAP_WIDTH_ORIGINAL = 1669;
+	const MAP_HEIGHT_ORIGINAL = 1535;
 	// Lets you edit quests as an admin
 	const [locations, setLocations] = useState(initialLocations);
 	const [quests, setQuests] = useState(initialQuests);
+	const [geoPhotos, setGeoPhotos] = useState(initialGeoPhotos);
+	const [geoSaving, setGeoSaving] = useState(false);
+
 	const [locSaving, setLocSaving] = useState(false);
 	const [questSaving, setQuestSaving] = useState(false);
 
@@ -28,6 +33,16 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [] }
 		is_multiplayer: false,
 		reward_points: 100
 	});
+	const [newGeoPhoto, setNewGeoPhoto] = useState({
+		file: null,
+		name: "",
+		x: 0,
+		y: 0
+	});
+	// For map display in admin
+	const ADMIN_MAP_WIDTH = 800;
+	const scale = ADMIN_MAP_WIDTH / MAP_WIDTH_ORIGINAL;
+	const ADMIN_MAP_HEIGHT = MAP_HEIGHT_ORIGINAL * scale;
 
 	// helper api caller (adjust endpoints if different)
 	async function api(path, method = "GET", body) {
@@ -128,12 +143,62 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [] }
 		if (!confirm("Delete this quest?")) return;
 		setQuestSaving(true);
 		try {
-			await api("quests", "DELETE", { quest_id: id });
+			await api(`quests`, "DELETE", { quest_id: id });
 			setQuests(s => s.filter(q => q.quest_id !== id));
 		} catch (err) {
 			console.error(err);
 		} finally {
 			setQuestSaving(false);
+		}
+	}
+
+	// GeoThinkr
+	async function addGeoPhoto() {
+		if (!newGeoPhoto.file) return alert("Select a file");
+		if (!newGeoPhoto.name) return alert("Enter name");
+		if (!newGeoPhoto.x && !newGeoPhoto.y) return alert("Click on map to set location");
+
+		setGeoSaving(true);
+		try {
+			const formData = new FormData();
+			formData.append("file", newGeoPhoto.file);
+			formData.append("name", newGeoPhoto.name);
+			formData.append("x", Math.round(newGeoPhoto.x));
+			formData.append("y", Math.round(newGeoPhoto.y));
+
+			const res = await fetch("/api/admin/geothinkr", {
+				method: "POST",
+				body: formData
+			});
+
+			if (!res.ok) {
+				const txt = await res.text();
+				throw new Error(txt);
+			}
+			const created = await res.json();
+			setGeoPhotos(prev => [created, ...prev]);
+			setNewGeoPhoto({ file: null, name: "", x: 0, y: 0 });
+			// clear file input
+			const fileInput = document.getElementById("geo-file-input");
+			if (fileInput) fileInput.value = "";
+		} catch (err) {
+			console.error(err);
+			alert("Failed to add photo: " + err.message);
+		} finally {
+			setGeoSaving(false);
+		}
+	}
+
+	async function deleteGeoPhoto(id) {
+		if (!confirm("Delete this photo?")) return;
+		setGeoSaving(true);
+		try {
+			await api(`geothinkr`, "DELETE", { id });
+			setGeoPhotos(s => s.filter(p => p.photo_id !== id));
+		} catch (err) {
+			alert("Failed to delete");
+		} finally {
+			setGeoSaving(false);
 		}
 	}
 
@@ -351,6 +416,118 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [] }
 							</button>
 						</div>
 					))}
+				</div>
+			</section>
+
+			{/* GEOTHINKR */}
+			<section className="bg-white rounded shadow p-4">
+				<div className="flex items-center justify-between mb-4">
+					<h2 className="text-lg font-medium">GeoThinkr Photos</h2>
+				</div>
+
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+					{/* Form Side */}
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">1. Choose Photo</label>
+							<input
+								id="geo-file-input"
+								type="file"
+								accept="image/*"
+								onChange={e => setNewGeoPhoto(p => ({ ...p, file: e.target.files[0] }))}
+								className="block w-full text-sm border rounded p-2"
+							/>
+						</div>
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">2. Location Name</label>
+							<input
+								value={newGeoPhoto.name}
+								onChange={e => setNewGeoPhoto(p => ({ ...p, name: e.target.value }))}
+								placeholder="e.g. Wesco Hall"
+								className="block w-full text-sm border rounded p-2"
+							/>
+						</div>
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">3. Click on Map</label>
+							<div className="text-xs text-gray-500">
+								Selected Coords: {Math.round(newGeoPhoto.x)}, {Math.round(newGeoPhoto.y)}
+							</div>
+						</div>
+
+						<button
+							onClick={addGeoPhoto}
+							disabled={geoSaving}
+							className="bg-[#00AEEF] text-white px-4 py-2 rounded font-bold hover:bg-[#008CC1] disabled:opacity-50 w-full"
+						>
+							{geoSaving ? "Uploading..." : "Add GeoThinkr Photo"}
+						</button>
+
+						<div className="border-t pt-4">
+							<h3 className="font-medium mb-2">Existing Photos ({geoPhotos.length})</h3>
+							<div className="space-y-2 max-h-[400px] overflow-y-auto">
+								{geoPhotos.map(p => (
+									<div key={p.photo_id} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50">
+										<img src={p.image_url} className="w-12 h-12 object-cover rounded" />
+										<div className="flex-1 min-w-0">
+											<div className="font-medium truncate">{p.location_name}</div>
+											<div className="text-xs text-gray-500">{p.x_coordinate}, {p.y_coordinate}</div>
+										</div>
+										<button
+											onClick={() => deleteGeoPhoto(p.photo_id)}
+											className="text-red-500 text-xs border px-2 py-1 rounded hover:bg-red-50"
+										>
+											Delete
+										</button>
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+
+					{/* Map Side */}
+					<div>
+						<div className="text-sm font-medium mb-2">Internal Map (Click to set location)</div>
+						<div
+							className="relative border-4 border-gray-300 rounded cursor-crosshair overflow-hidden inline-block"
+							style={{ width: ADMIN_MAP_WIDTH, height: ADMIN_MAP_HEIGHT }}
+							onClick={(e) => {
+								const rect = e.currentTarget.getBoundingClientRect();
+								const clickX = e.clientX - rect.left;
+								const clickY = e.clientY - rect.top;
+								// Convert to original scale
+								const originalX = clickX / scale;
+								const originalY = clickY / scale;
+								setNewGeoPhoto(p => ({ ...p, x: originalX, y: originalY }));
+							}}
+						>
+							<img
+								src="/map.png"
+								style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+								draggable={false}
+							/>
+							{/* Marker */}
+							{newGeoPhoto.x > 0 && (
+								<div
+									className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+									style={{
+										left: newGeoPhoto.x * scale,
+										top: newGeoPhoto.y * scale
+									}}
+								/>
+							)}
+							{/* Show existing markers faintly? */}
+							{geoPhotos.map(p => (
+								<div
+									key={p.photo_id}
+									className="absolute w-2 h-2 bg-blue-500/50 rounded-full pointer-events-none"
+									style={{
+										left: p.x_coordinate * scale,
+										top: p.y_coordinate * scale
+									}}
+								/>
+							))}
+						</div>
+					</div>
 				</div>
 			</section>
 		</div>
