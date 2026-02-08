@@ -24,6 +24,8 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 
 	const [locSaving, setLocSaving] = useState(false);
 	const [questSaving, setQuestSaving] = useState(false);
+	const [pointsSaving, setPointsSaving] = useState(false);
+	const [manualPoints, setManualPoints] = useState({ email: "", amount: 100 });
 
 	// New location/quest forms
 	const [newLoc, setNewLoc] = useState({ name: "", type: "", x_coordinate: 0, y_coordinate: 0 });
@@ -199,6 +201,34 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			alert("Failed to delete");
 		} finally {
 			setGeoSaving(false);
+		}
+	}
+
+	// Manual Points
+	async function awardPoints() {
+		if (!manualPoints.email) return alert("Email required");
+		setPointsSaving(true);
+		try {
+			const res = await fetch("/api/admin/points", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					user_email: manualPoints.email,
+					points: manualPoints.amount
+				})
+			});
+			if (!res.ok) {
+				const txt = await res.text();
+				throw new Error(txt);
+			}
+			const data = await res.json();
+			alert(`Success! User now has ${data.new_points} points.`);
+			// Clear email after success?
+			// setManualPoints(p => ({ ...p, email: "" })); 
+		} catch (err) {
+			alert("Failed: " + err.message);
+		} finally {
+			setPointsSaving(false);
 		}
 	}
 
@@ -528,6 +558,38 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							))}
 						</div>
 					</div>
+				</div>
+			</section>
+
+			{/* MANUAL POINTS */}
+			<section className="bg-white rounded shadow p-4">
+				<h2 className="text-lg font-medium mb-4">Award Points Manually</h2>
+				<div className="flex items-end gap-4">
+					<div className="space-y-1">
+						<label className="text-sm font-medium">User Email</label>
+						<input
+							className="block border rounded px-3 py-2 w-64"
+							placeholder="user@ku.edu"
+							value={manualPoints.email}
+							onChange={e => setManualPoints(p => ({ ...p, email: e.target.value }))}
+						/>
+					</div>
+					<div className="space-y-1">
+						<label className="text-sm font-medium">Amount</label>
+						<input
+							type="number"
+							className="block border rounded px-3 py-2 w-32"
+							value={manualPoints.amount}
+							onChange={e => setManualPoints(p => ({ ...p, amount: parseInt(e.target.value) }))}
+						/>
+					</div>
+					<button
+						onClick={awardPoints}
+						disabled={pointsSaving}
+						className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 disabled:opacity-50"
+					>
+						{pointsSaving ? "Sending..." : "Award Points"}
+					</button>
 				</div>
 			</section>
 		</div>
