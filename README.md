@@ -1,5 +1,5 @@
-# EECS581 Project 3
-EECS581 Project Part 3: Side Quest  
+# EECS582 Term Project
+EECS582 Project: Side Quest  
 An app that gives fun campus challenges and tracks your progress.
 
 Team Members  
