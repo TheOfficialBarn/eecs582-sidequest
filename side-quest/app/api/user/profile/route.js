@@ -2,8 +2,8 @@
 	Name: User Profile API endpoint
 	Description: Retrieves and updates authenticated user profile information.
 	Programmers: Liam Aga
-	Date: 2/15/2025
-	Revisions: Initial profile fetch and update - 2/15/2025
+	Date: 2/15/2026
+	Revisions: Initial profile fetch and update - 2/15/2026
 	Errors: 401 Unauthorized, 404 User not found, 500 Update failure
 
 	Input:
