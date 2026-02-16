@@ -1,3 +1,19 @@
+/*
+	Name: GeoThinkr Game API endpoint
+	Description: Serves random unplayed photos and processes user guesses with scoring.
+	Programmers: Liam Aga
+	Date: 2/15/2025
+	Revisions: Integrated scoring + history tracking - 11/06/2025
+	Errors: 401 Unauthorized, 404 Not found, 409 Already played, 500 Server error
+
+	Input:
+		GET: Authenticated request (session cookie "sid")
+		POST: JSON { photo_id, x, y }
+
+	Output:
+		GET: { photo_id, image_url, location_name }
+		POST: { distance, points, tier, correct_x, correct_y, location_name }
+*/
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
