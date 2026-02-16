@@ -16,25 +16,38 @@ import { verifyToken } from "@/lib/auth";
 import AdminPanel from "./panel";
 
 export default async function AdminPage() {
-	// server-side auth client
+	// 1. Security Check
+	// The "sid" cookie is retrieved to access the session data.
+    // It's run through verifyToken to ensure the session is valid
 	const cookieStore = await cookies();
 	const token = cookieStore.get("sid")?.value;
 	const decoded = token ? verifyToken(token) : null;
 
+	// The request is stopped if no valid token is found.
+    // The user is then redirected to the login screen.
 	if (!decoded) return redirect("/login");
 
-	// Resolve user id from token payload (support common fields)
+	// 2. Identify the User
+    // The user ID is required to track who modifies the data.
+    // Multiple fields are checked to ensure compatibility with token formats.	
 	const userId = decoded.id ?? decoded.user_id ?? decoded.sub ?? null;
 	if (!userId) return redirect("/login");
 
-	// use admin client to check admin flag and fetch data
+	// 3. Database Access
+    // The Admin Client is initialized to bypass row-level security.
+    // This access is restricted to secure server-side environments.	
 	const supabase = createAdminClient();
 
-	// load locations
+	// 4. Gathering Data
+    // Three separate queries are executed to populate the dashboard.
+    
+    // Map locations are retrieved and sorted by ID for consistency.
 	const { data: locations = [], error: locErr } = await supabase
 		.from("locations")
 		.select("location_id, name, type, x_coordinate, y_coordinate")
 		.order("location_id", { ascending: true });
+	
+	// Existing quests are fetched for the management table.
 	const { data: quests = [], error: qErr } = await supabase
 		.from("quests")
 		.select("*")
@@ -46,10 +59,12 @@ export default async function AdminPage() {
 		.select("*")
 		.order("created_at", { ascending: false });
 
+	// Any database request failure is logged to the console.
 	if (locErr || qErr) {
 		console.error("Admin page load error:", locErr || qErr);
 	}
 
-	// pass initial data to a client component that handles editing
+	// 5. Showing the Dashboard
+    // Data is passed into the AdminPanel component for the interface.
 	return <AdminPanel initialLocations={locations} initialQuests={quests} initialGeoPhotos={geoPhotos} />;
 }
