@@ -1,3 +1,16 @@
+/*
+	Name: multiplayer/page.js
+	Description: Geothinkr game landing page
+	Programmers: Aiden Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: 
+		- User auth token (cookie)
+		- Location data from database (locations, quests)
+	Output: 
+		- Map for location selection
+*/
 
 "use client";
 
@@ -83,12 +96,7 @@ export default function GeoThinkrPage() {
 			if (!res.ok) throw new Error("Failed to submit guess");
 			const data = await res.json();
 
-			// Result comes back with correct X/Y in original coords.
-			// We need to scale them to current map display size for rendering line/target.
-			// Wait, map display size might change if window resizes, but usually fine for immediate result.
-			// Better to store scale factor or re-calculate.
-			// We use the same map instance so size is same.
-
+			// Scale coords to current map display size for rendering line/target.
 			setResult({
 				...data,
 				displayCorrectX: data.correct_x * scaleX,
@@ -234,7 +242,7 @@ export default function GeoThinkrPage() {
 										<X className="w-4 h-4 text-white" />
 									</div>
 
-									{/* Correct Location */}
+									{/* Location */}
 									<div
 										className="absolute w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20 animate-bounce"
 										style={{ left: result.displayCorrectX, top: result.displayCorrectY }}

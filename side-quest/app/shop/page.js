@@ -1,3 +1,15 @@
+/*
+	Name: shop/page.js
+	Description: Shop for buying profile customization options with points
+	Programmers: Aiden Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: 
+		- User auth token (cookie)
+	Output: 
+		- Shop page
+*/
 
 import { requireAuthOrRedirect } from "@/lib/requireAuth";
 import { cookies } from "next/headers";
@@ -17,7 +29,7 @@ export default async function ShopPage() {
 	const token = cookieStore.get("sid")?.value;
 	const userPayload = token ? verifyToken(token) : null;
 
-	// We assume redirection happens in requireAuthOrRedirect if invalid
+	// Redirection happens in requireAuthOrRedirect if invalid
 	if (!userPayload) return null;
 
 	const supabase = createAdminClient();
@@ -29,7 +41,7 @@ export default async function ShopPage() {
 		.eq("user_id", userPayload.id)
 		.single();
 
-	// Fallback if user missing in DB (shouldn't happen) or field missing
+	// Fallback if user missing in DB
 	const userData = user || { ...userPayload, profile_picture_url: null };
 
 	return (

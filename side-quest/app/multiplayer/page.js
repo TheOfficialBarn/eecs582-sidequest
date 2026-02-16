@@ -1,3 +1,19 @@
+/*
+	Name: multiplayer/page.js
+	Description: Multiplayer quest functionality
+	Programmers: Aiden Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: 
+		- User auth token (cookie)
+		- Quest data from database (locations, quests)
+		- User progress data (completed quests)
+	Output: 
+		- Rendered page showing multiplayer quests by location
+		- Completion statistics
+		- progress bars, notifications
+*/
 
 import { requireAuthOrRedirect } from "@/lib/requireAuth";
 import { cookies } from "next/headers";

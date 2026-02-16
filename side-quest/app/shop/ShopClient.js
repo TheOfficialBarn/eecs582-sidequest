@@ -1,4 +1,15 @@
-
+/*
+	Name: shop/ShopClient.js
+	Description: Client side page for buying profile customization options with points
+	Programmers: Aiden Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: 
+		- User auth token (cookie)
+	Output: 
+		- Shop page client
+*/
 "use client";
 
 import { useState } from "react";

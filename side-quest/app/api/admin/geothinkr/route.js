@@ -1,3 +1,13 @@
+/*
+	Name: admin/route.js
+	Description: API endpoint for geothinkr admin options
+	Programmers: Aiden Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: Admin operations
+	Output: Commits and queries to the database.
+*/
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";

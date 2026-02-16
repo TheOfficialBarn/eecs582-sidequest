@@ -1,3 +1,13 @@
+/*
+	Name: points/route.js
+	Description: API endpoint for adding points to user's account.
+	Programmers: Aidan Barnard
+	Date: 2/09/2026
+	Revisions: N/A
+	Errors: N/A
+	Input: How many points to add to user's account.
+	Output: Point actions.
+*/
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
