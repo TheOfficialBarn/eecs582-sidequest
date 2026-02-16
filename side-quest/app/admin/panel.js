@@ -14,20 +14,25 @@
 import { useState, useMemo } from "react";
 
 export default function AdminPanel({ initialLocations = [], initialQuests = [], initialGeoPhotos = [] }) {
+	// 1. Constants & State Management
+    // Map dimensions are used to scale coordinates between the original image and the UI.
 	const MAP_WIDTH_ORIGINAL = 1669;
 	const MAP_HEIGHT_ORIGINAL = 1535;
-	// Lets you edit quests as an admin
+	const ADMIN_MAP_WIDTH = 800;
+
+	// State holds all data in the browser so the UI updates instantly.
 	const [locations, setLocations] = useState(initialLocations);
 	const [quests, setQuests] = useState(initialQuests);
 	const [geoPhotos, setGeoPhotos] = useState(initialGeoPhotos);
-	const [geoSaving, setGeoSaving] = useState(false);
 
+	// Status trackers show when app is saving to the database.
+	const [geoSaving, setGeoSaving] = useState(false);
 	const [locSaving, setLocSaving] = useState(false);
 	const [questSaving, setQuestSaving] = useState(false);
 	const [pointsSaving, setPointsSaving] = useState(false);
 	const [manualPoints, setManualPoints] = useState({ email: "", amount: 100 });
 
-	// New location/quest forms
+	// Empty forms ready for admin to fill out.
 	const [newLoc, setNewLoc] = useState({ name: "", type: "", x_coordinate: 0, y_coordinate: 0 });
 	const [newQuest, setNewQuest] = useState({
 		text: "",
@@ -41,12 +46,14 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		x: 0,
 		y: 0
 	});
-	// For map display in admin
-	const ADMIN_MAP_WIDTH = 800;
+
+	// 2. Map Scaling
+    // Calculation determines scale so clicks land in the right spot.
 	const scale = ADMIN_MAP_WIDTH / MAP_WIDTH_ORIGINAL;
 	const ADMIN_MAP_HEIGHT = MAP_HEIGHT_ORIGINAL * scale;
 
-	// helper api caller (adjust endpoints if different)
+	// 3. Server Communication
+    // Helper function handles sending changes to the database.
 	async function api(path, method = "GET", body) {
 		const res = await fetch(`/api/admin/${path}`, {
 			method,
@@ -60,7 +67,9 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		return res.json().catch(() => null);
 	}
 
-	// Handle location editing //
+	// 4. Location Management
+    // Functions add, change, or remove map markers.
+
 	// Add new location
 	async function addLocation() {
 		if (!newLoc.name.trim()) return alert("Name required");
@@ -105,7 +114,9 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		}
 	}
 
-	// Handle quest editing //
+	// 5. Quest Management
+    // Functions create and edit tasks for locations.
+
 	// Add new quest
 	async function addQuest() {
 		if (!newQuest.text.trim()) return alert("Quest text required");
@@ -154,7 +165,8 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		}
 	}
 
-	// GeoThinkr
+	// 6. Photo Management
+    // GeoThinkr -- Logic handles image uploads and map pinning.
 	async function addGeoPhoto() {
 		if (!newGeoPhoto.file) return alert("Select a file");
 		if (!newGeoPhoto.name) return alert("Enter name");
@@ -204,7 +216,8 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		}
 	}
 
-	// Manual Points
+	// 7. Point Distribution
+    // Direct method grants points via student email.
 	async function awardPoints() {
 		if (!manualPoints.email) return alert("Email required");
 		setPointsSaving(true);
@@ -232,6 +245,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		}
 	}
 
+	// 8. Sorting
 	// Create dropdowns for selecting location for each quest
 	const locById = useMemo(() => Object.fromEntries(locations.map(l => [l.location_id, l.name])), [locations]);
 	const questsSorted = useMemo(() => {
@@ -246,7 +260,8 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		return copy;
 	}, [quests, locById]);
 
-	// Return panel
+	// 9. Component UI
+    // Render builds visual sections for Admin Panel.
 	return (
 		<div className="max-w-7xl mx-auto p-6 space-y-6 text-[#FF7A00]">
 			<h1 className="text-2xl font-semibold">Admin Panel</h1>
