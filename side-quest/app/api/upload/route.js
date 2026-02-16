@@ -1,3 +1,17 @@
+/*
+	Name: Profile Image Upload API endpoint
+	Description: Uploads a user avatar to Supabase storage and updates the user's profile picture URL.
+	Programmers: Liam Aga
+	Date: 2/15/2025
+	Revisions: Initial upload integration - 2/15/2025
+	Errors: 400 No file, 401 Unauthorized, 500 Upload or update failure
+
+	Input:
+		POST: Authenticated multipart form-data with file
+
+	Output:
+		POST: { url }
+*/
 
 import { verifyToken } from "../../../lib/auth";
 import { createAdminClient } from "../../../lib/supabase/admin";
