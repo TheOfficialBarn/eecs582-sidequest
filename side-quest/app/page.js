@@ -17,7 +17,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 // Icon set used across hero, stats, and CTA sections
-import { Map, Compass, Backpack, Star, Sparkles, Trophy, Users } from "lucide-react";
+import { Map, Compass, Backpack, Star, Sparkles, Trophy, Users, Target } from "lucide-react";
 
 /*
 	Component: Home
@@ -71,7 +71,7 @@ export default function Home() {
 				</p>
 
 				{/* SECTION: Feature / Stats Cards */}
-				<div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto transition-opacity duration-700 delay-400 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+				<div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-5xl mx-auto transition-opacity duration-700 delay-400 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 					{/* CARD: Social / Leaderboard */}
 					<div className="bg-white rounded-2xl p-6 border-4 border-[#00AEEF] shadow-[6px_6px_0_#FF7A00] hover:shadow-[8px_8px_0_#FF7A00] transform hover:scale-105 transition-all">
 						<Users className="w-10 h-10 text-[#00AEEF] mx-auto mb-2" />
@@ -92,6 +92,13 @@ export default function Home() {
 						<p className="text-2xl font-bold text-[#00AEEF]">Epic Quests</p>
 						<p className="text-sm text-gray-600">A wide variety for each location</p>
 					</div>
+
+					{/* CARD: GeoThinkr */}
+					<Link href="/geothinkr" className="bg-white rounded-2xl p-6 border-4 border-[#00AEEF] shadow-[6px_6px_0_#FFDA00] hover:shadow-[8px_8px_0_#FFDA00] transform hover:scale-105 transition-all block">
+						<Target className="w-10 h-10 text-[#00AEEF] mx-auto mb-2" />
+						<p className="text-2xl font-bold text-[#FF7A00]">GeoThinkr</p>
+						<p className="text-sm text-gray-600">Guess campus photo locations on the map</p>
+					</Link>
 				</div>
 
 				{/* SECTION: CTA Button (animated background layers + hover shimmer) */}
