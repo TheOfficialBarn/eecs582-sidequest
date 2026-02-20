@@ -1,27 +1,28 @@
 /*
 	Name: page.js
-	Description: Page to view leaderboard of global user progress.
+	Description: Page to view leaderboard of global user progress with Quest and GeoThinkr tabs.
 	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 10/25/2025
-	Revisions: Update UI style - 10/26/2025, Add functional list of user rankings - 11/22/2025
+	Revisions: Update UI style - 10/26/2025, Add functional list of user rankings - 11/22/2025,
+	           Merged GeoThinkr leaderboard into tabbed view - 2/19/2026
 	Errors: N/A
-	Input: Global user progress data from the server
-	Output: Leaderboard page displaying user rankings
-	
+	Input: Global user progress data and GeoThinkr history from the server
+	Output: Leaderboard page displaying user rankings for quests and GeoThinkr
+
 */
 import { createAdminClient } from "@/lib/supabase/admin";
+import LeaderboardTabs from "./LeaderboardTabs";
 
 export default async function LeaderboardsPage() {
 	const supabase = createAdminClient();
 
-	// Get all completed progress rows and sum counts by user_id for sorting
+	// --- Quest Leaderboard Data ---
 	const { data: rows, error: rowsErr } = await supabase
 		.from("progress")
 		.select("user_id")
 		.eq("completed", true);
 
 	if (rowsErr) {
-		// Show an error page if leaderboard could not be loaded
 		console.error("Failed to load progress:", rowsErr);
 		return (
 			<div className="max-w-6xl mx-auto p-8">
@@ -44,57 +45,62 @@ export default async function LeaderboardsPage() {
 		.sort((a, b) => b.completedCount - a.completedCount)
 		.slice(0, 20);
 
-	// Fetch basic user/profile info for these user ids (try profiles table first)
-	const userIds = sorted.map(s => s.userId);
-	let users = [];
-	if (userIds.length > 0) {
-		// Get all user information
-		const { data: profiles, error: profErr } = await supabase
+	// Fetch user names for quest leaderboard
+	const questUserIds = sorted.map(s => s.userId);
+	let questUsers = [];
+	if (questUserIds.length > 0) {
+		const { data: profiles } = await supabase
 			.from("users")
 			.select("user_id, name")
-			.in("user_id", userIds);
-		// Compile in profiles list
-		users = profiles.map(p => ({
+			.in("user_id", questUserIds);
+		questUsers = profiles?.map(p => ({
 			id: p.user_id,
-			name: p.name || p.email || p.id,
-			email: p.email,
-		}));
+			name: p.name || p.id,
+		})) || [];
 	}
 
-	// Create a reference object to get users by id
-	const usersById = Object.fromEntries(users.map(u => [String(u.id), u]));
+	const usersById = Object.fromEntries(questUsers.map(u => [String(u.id), u]));
 
-	// Return a list of the top 20 users in a vertical list of cars
+	const questLeaders = sorted.map(row => ({
+		userId: row.userId,
+		displayName: usersById[row.userId]?.name || row.userId,
+		completedCount: row.completedCount,
+	}));
+
+	// --- GeoThinkr Leaderboard Data ---
+	const { data: geoHistory, error: geoErr } = await supabase
+		.from("geothinkr_history")
+		.select("user_id, points_awarded, users(name)");
+
+	let geoLeaders = [];
+	if (!geoErr && geoHistory) {
+		const userMap = {};
+		geoHistory.forEach(h => {
+			const uid = h.user_id;
+			if (!userMap[uid]) {
+				const u = Array.isArray(h.users) ? h.users[0] : h.users;
+				userMap[uid] = {
+					userId: uid,
+					name: u?.name || "Unknown",
+					totalPoints: 0,
+					totalGames: 0,
+					spotOns: 0,
+				};
+			}
+			userMap[uid].totalPoints += h.points_awarded;
+			userMap[uid].totalGames += 1;
+			if (h.points_awarded >= 500) userMap[uid].spotOns += 1;
+		});
+
+		geoLeaders = Object.values(userMap)
+			.sort((a, b) => b.totalPoints - a.totalPoints)
+			.slice(0, 50);
+	}
+
 	return (
 		<div className="max-w-6xl mx-auto p-8">
-			<h2 className="text-3xl font-bold mb-4 text-[#FF7A00]">Leaderboard</h2>
-
-			{sorted.length === 0 ? (
-				<p className="text-gray-600">No completed quests yet.</p>
-			) : (
-				<ol className="space-y-2">
-					{sorted.map((row, i) => {
-						// Render each player card
-						const place = i + 1;
-						const user = usersById[row.userId]; // use reference list
-						const displayName = user?.name || row.userId; // fallback to user id if name could not be found
-						return (
-							<li
-								key={row.userId}
-								className="flex items-center justify-between gap-4 bg-white rounded-lg p-4 shadow-lg"
-							>
-								<div className="flex items-center gap-4">
-									<div className="w-10 text-xl font-bold text-gray-700">{place}.</div>
-									<div>
-										<div className="font-medium text-gray-900">{displayName}</div>
-									</div>
-								</div>
-								<div className="text-lg font-semibold text-[#FF7A00]">{`Completed quests: ${row.completedCount}`}</div>
-							</li>
-						);
-					})}
-				</ol>
-			)}
+			<h2 className="text-3xl font-bold mb-6 text-[#FF7A00]">Leaderboard</h2>
+			<LeaderboardTabs questLeaders={questLeaders} geoLeaders={geoLeaders} />
 		</div>
 	);
 }
