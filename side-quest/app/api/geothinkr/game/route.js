@@ -5,7 +5,8 @@
 	Programmers: Liam Aga
 	Date: 2/15/2025
 	Revisions: Integrated scoring + history tracking - 11/06/2025,
-	           Added difficulty filter, hints, verified filter, achievements - 2/19/2026
+	           Added difficulty filter, hints, verified filter, achievements - 2/19/2026,
+	           Added exclude param for multi-round sessions - 2/19/2026
 	Errors: 401 Unauthorized, 404 Not found, 409 Already played, 500 Server error
 
 	Input:
@@ -175,7 +176,13 @@ export async function GET(req) {
 		return NextResponse.json({ error: "No photos available" }, { status: 404 });
 	}
 
-	const randomPhoto = unplayedPhotos[Math.floor(Math.random() * unplayedPhotos.length)];
+	// Exclude photos already seen in the current multi-round session
+	const excludeParam = new URL(req.url).searchParams.get("exclude");
+	const excludeIds = excludeParam ? new Set(excludeParam.split(",")) : new Set();
+	let candidates = unplayedPhotos.filter(p => !excludeIds.has(String(p.photo_id)));
+	if (candidates.length === 0) candidates = unplayedPhotos;
+
+	const randomPhoto = candidates[Math.floor(Math.random() * candidates.length)];
 	return NextResponse.json(randomPhoto);
 }
 
