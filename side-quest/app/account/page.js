@@ -3,7 +3,7 @@
 	Description: Account configuration page with completed quests dashboard.
 	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 10/25/2025
-	Revisions: Added completed quests display - 10/26/2025
+	Revisions: Added completed quests display - 10/26/2025, Added GeoThinkr stats + achievements - 2/19/2026
 	Errors: N/A
 	Input: email, username, user information from server
 	Output: Account page showing user info
@@ -13,7 +13,7 @@ import { requireAuthOrRedirect } from "@/lib/requireAuth";
 import { cookies } from "next/headers";
 import { verifyToken } from "../../lib/auth";
 import { createAdminClient } from "../../lib/supabase/admin";
-import { CheckCircle2, MapPin, Trophy, Edit2, Coins } from "lucide-react";
+import { CheckCircle2, MapPin, Trophy, Edit2, Coins, Target, Award, Eye, GraduationCap, Repeat, Flame, Shield, Compass } from "lucide-react";
 import Link from "next/link";
 
 export default async function AccountPage() {
@@ -72,6 +72,35 @@ export default async function AccountPage() {
 		`)
 		.eq("user_id", user.id)
 		.eq("completed", true);
+
+	// Fetch GeoThinkr stats
+	const { data: geoHistory } = await supabase
+		.from("geothinkr_history")
+		.select("points_awarded")
+		.eq("user_id", user.id);
+
+	const geoTotalGames = geoHistory?.length || 0;
+	const geoSpotOns = geoHistory?.filter(h => h.points_awarded >= 500).length || 0;
+	const geoTotalPoints = geoHistory?.reduce((sum, h) => sum + h.points_awarded, 0) || 0;
+	const geoAccuracy = geoTotalGames > 0 ? Math.round((geoSpotOns / geoTotalGames) * 100) : 0;
+
+	// Fetch achievements
+	const { data: allAchievements } = await supabase
+		.from("achievements")
+		.select("achievement_id, key, name, description, icon");
+
+	const { data: earnedAchievements } = await supabase
+		.from("user_achievements")
+		.select("achievement_id, earned_at")
+		.eq("user_id", user.id);
+
+	const earnedMap = {};
+	earnedAchievements?.forEach(e => { earnedMap[e.achievement_id] = e.earned_at; });
+
+	const achievements = allAchievements?.map(a => ({
+		...a,
+		earned_at: earnedMap[a.achievement_id] || null
+	})) || [];
 
 	// Organize completed quests by location
 	const completedByLocation = {};
@@ -180,7 +209,65 @@ export default async function AccountPage() {
 				</div>
 
 				{/* Completed Quests by Location */}
-				{totalCompleted > 0 ? (
+				{/* GeoThinkr Stats */}
+			<div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9500] text-white rounded-lg shadow-lg p-6 mb-6">
+				<div className="flex items-center gap-2 mb-4">
+					<Target className="w-6 h-6" />
+					<span className="font-bold text-lg">GeoThinkr Stats</span>
+				</div>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					<div className="text-center">
+						<div className="text-3xl font-bold">{geoTotalGames}</div>
+						<div className="text-sm opacity-90">Games Played</div>
+					</div>
+					<div className="text-center">
+						<div className="text-3xl font-bold">{geoSpotOns}</div>
+						<div className="text-sm opacity-90">Spot-ons</div>
+					</div>
+					<div className="text-center">
+						<div className="text-3xl font-bold">{geoTotalPoints}</div>
+						<div className="text-sm opacity-90">Points Earned</div>
+					</div>
+					<div className="text-center">
+						<div className="text-3xl font-bold">{geoAccuracy}%</div>
+						<div className="text-sm opacity-90">Accuracy</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Achievements */}
+			{achievements.length > 0 && (
+				<div className="mb-6">
+					<h3 className="text-xl font-bold text-[#FF7A00] mb-3 flex items-center gap-2">
+						<Award className="w-5 h-5" /> Achievements
+					</h3>
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+						{achievements.map(a => (
+							<div
+								key={a.achievement_id}
+								className={`rounded-xl p-4 text-center border-2 transition-all ${
+									a.earned_at
+										? 'bg-[#FFF6D8] border-[#FFDA00] shadow-md'
+										: 'bg-gray-100 border-gray-200 opacity-50'
+								}`}
+							>
+								<div className="text-2xl mb-1">
+									{a.earned_at ? '🏆' : '🔒'}
+								</div>
+								<div className="font-bold text-sm text-gray-800">{a.name}</div>
+								<div className="text-xs text-gray-500 mt-1">{a.description}</div>
+								{a.earned_at && (
+									<div className="text-xs text-green-600 mt-1 font-medium">
+										Earned {new Date(a.earned_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+									</div>
+								)}
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{totalCompleted > 0 ? (
 					<div className="space-y-4">
 						<h3 className="text-2xl font-semibold text-[#FF7A00] mb-4">Completed Quests</h3>
 						{Object.entries(completedByLocation).map(([locationName, quests]) => (
