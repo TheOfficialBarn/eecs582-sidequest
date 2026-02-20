@@ -57,6 +57,10 @@ export async function POST(req) {
 		.from('geothinkr-images')
 		.getPublicUrl(fileName);
 
+	const category = formData.get("category") || "landmark";
+	const difficulty = formData.get("difficulty") || "medium";
+	const verified = formData.get("verified") === "true";
+
 	// Save to DB
 	const { data, error: dbError } = await supabase
 		.from("geothinkr_photos")
@@ -64,7 +68,10 @@ export async function POST(req) {
 			image_url: publicUrl,
 			x_coordinate: parseInt(x),
 			y_coordinate: parseInt(y),
-			location_name: name
+			location_name: name,
+			category,
+			difficulty,
+			verified
 		}])
 		.select()
 		.single();
@@ -74,6 +81,38 @@ export async function POST(req) {
 	}
 
 	return NextResponse.json(data, { status: 201 });
+}
+
+/*
+	Function: PATCH
+	Description: Toggles verified status or updates category/difficulty on a photo.
+	Arguments: req - Request with JSON { id, verified?, category?, difficulty? }
+	Returns: Updated photo record or error
+*/
+export async function PATCH(req) {
+	const body = await req.json().catch(() => ({}));
+	const { id, ...updates } = body;
+	if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+
+	const allowedFields = {};
+	if (updates.verified !== undefined) allowedFields.verified = updates.verified;
+	if (updates.category !== undefined) allowedFields.category = updates.category;
+	if (updates.difficulty !== undefined) allowedFields.difficulty = updates.difficulty;
+
+	if (Object.keys(allowedFields).length === 0) {
+		return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+	}
+
+	const supabase = createAdminClient();
+	const { data, error } = await supabase
+		.from("geothinkr_photos")
+		.update(allowedFields)
+		.eq("photo_id", id)
+		.select()
+		.single();
+
+	if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+	return NextResponse.json(data);
 }
 
 export async function DELETE(req) {

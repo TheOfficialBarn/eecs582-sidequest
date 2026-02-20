@@ -44,7 +44,10 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		file: null,
 		name: "",
 		x: 0,
-		y: 0
+		y: 0,
+		category: "landmark",
+		difficulty: "medium",
+		verified: false
 	});
 
 	// 2. Map Scaling
@@ -179,6 +182,9 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			formData.append("name", newGeoPhoto.name);
 			formData.append("x", Math.round(newGeoPhoto.x));
 			formData.append("y", Math.round(newGeoPhoto.y));
+			formData.append("category", newGeoPhoto.category);
+			formData.append("difficulty", newGeoPhoto.difficulty);
+			formData.append("verified", newGeoPhoto.verified.toString());
 
 			const res = await fetch("/api/admin/geothinkr", {
 				method: "POST",
@@ -191,7 +197,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			}
 			const created = await res.json();
 			setGeoPhotos(prev => [created, ...prev]);
-			setNewGeoPhoto({ file: null, name: "", x: 0, y: 0 });
+			setNewGeoPhoto({ file: null, name: "", x: 0, y: 0, category: "landmark", difficulty: "medium", verified: false });
 			// clear file input
 			const fileInput = document.getElementById("geo-file-input");
 			if (fileInput) fileInput.value = "";
@@ -493,7 +499,42 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							/>
 						</div>
 						<div className="space-y-2">
-							<label className="block text-sm font-medium">3. Click on Map</label>
+							<label className="block text-sm font-medium">3. Category</label>
+							<select
+								value={newGeoPhoto.category}
+								onChange={e => setNewGeoPhoto(p => ({ ...p, category: e.target.value }))}
+								className="block w-full text-sm border rounded p-2"
+							>
+								<option value="landmark">Landmark</option>
+								<option value="building">Building</option>
+								<option value="nature">Nature</option>
+								<option value="statue">Statue</option>
+								<option value="other">Other</option>
+							</select>
+						</div>
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">4. Difficulty</label>
+							<select
+								value={newGeoPhoto.difficulty}
+								onChange={e => setNewGeoPhoto(p => ({ ...p, difficulty: e.target.value }))}
+								className="block w-full text-sm border rounded p-2"
+							>
+								<option value="easy">Easy</option>
+								<option value="medium">Medium</option>
+								<option value="hard">Hard</option>
+							</select>
+						</div>
+						<div className="flex items-center gap-2">
+							<input
+								type="checkbox"
+								id="geo-verified"
+								checked={newGeoPhoto.verified}
+								onChange={e => setNewGeoPhoto(p => ({ ...p, verified: e.target.checked }))}
+							/>
+							<label htmlFor="geo-verified" className="text-sm font-medium">Verified (visible in gameplay)</label>
+						</div>
+						<div className="space-y-2">
+							<label className="block text-sm font-medium">5. Click on Map</label>
 							<div className="text-xs text-gray-500">
 								Selected Coords: {Math.round(newGeoPhoto.x)}, {Math.round(newGeoPhoto.y)}
 							</div>
@@ -515,8 +556,25 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 										<img src={p.image_url} className="w-12 h-12 object-cover rounded" />
 										<div className="flex-1 min-w-0">
 											<div className="font-medium truncate">{p.location_name}</div>
-											<div className="text-xs text-gray-500">{p.x_coordinate}, {p.y_coordinate}</div>
+											<div className="text-xs text-gray-500">{p.x_coordinate}, {p.y_coordinate} · {p.category || 'landmark'} · {p.difficulty || 'medium'}</div>
 										</div>
+										<button
+											onClick={async () => {
+												const newVal = !p.verified;
+												try {
+													const res = await fetch("/api/admin/geothinkr", {
+														method: "PATCH",
+														headers: { "Content-Type": "application/json" },
+														body: JSON.stringify({ id: p.photo_id, verified: newVal })
+													});
+													if (!res.ok) throw new Error("Failed");
+													setGeoPhotos(s => s.map(x => x.photo_id === p.photo_id ? { ...x, verified: newVal } : x));
+												} catch { alert("Failed to toggle verified"); }
+											}}
+											className={`text-xs border px-2 py-1 rounded ${p.verified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-500'}`}
+										>
+											{p.verified ? '✓ Verified' : 'Unverified'}
+										</button>
 										<button
 											onClick={() => deleteGeoPhoto(p.photo_id)}
 											className="text-red-500 text-xs border px-2 py-1 rounded hover:bg-red-50"
