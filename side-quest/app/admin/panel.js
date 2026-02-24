@@ -303,7 +303,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							onChange={e => setNewLoc(n => ({ ...n, y_coordinate: Number(e.target.value) }))}
 						/>
 						<button
-							className="ml-2 bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60"
+							className="ml-2 bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer"
 							onClick={addLocation}
 							disabled={locSaving}
 						>
@@ -342,7 +342,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								onBlur={e => updateLocation(loc.location_id, { y_coordinate: Number(e.target.value) })}
 							/>
 							<button
-								className="ml-2 text-red-600 px-2 py-1 rounded border"
+								className="ml-2 text-red-600 px-2 py-1 rounded border cursor-pointer"
 								onClick={() => deleteLocation(loc.location_id)}
 								disabled={locSaving}
 								title="Delete location"
@@ -381,9 +381,10 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							/>
 						</div>
 						<div className="flex items-center gap-4">
-							<label className="flex items-center gap-1 text-sm text-gray-700">
+							<label className="flex items-center gap-1 text-sm text-gray-700 cursor-pointer">
 								<input
 									type="checkbox"
+									className="cursor-pointer"
 									checked={newQuest.is_multiplayer || false}
 									onChange={e => setNewQuest(q => ({ ...q, is_multiplayer: e.target.checked }))}
 								/>
@@ -399,7 +400,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								/>
 							</label>
 							<button
-								className="ml-auto bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60"
+								className="ml-auto bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer"
 								onClick={addQuest}
 								disabled={questSaving}
 							>
@@ -433,10 +434,11 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							/>
 
 							<div className="flex flex-col text-xs gap-1">
-								<label className="flex items-center gap-1">
+								<label className="flex items-center gap-1  cursor-pointer">
 									<input
 										type="checkbox"
 										checked={q.is_multiplayer || false}
+										className="cursor-pointer"
 										onChange={e => {
 											const val = e.target.checked;
 											setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, is_multiplayer: val } : x)));
@@ -458,7 +460,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							</div>
 
 							<button
-								className="ml-2 text-red-600 px-2 py-1 rounded border"
+								className="ml-2 text-red-600 px-2 py-1 rounded border cursor-pointer"
 								onClick={() => deleteQuest(q.quest_id)}
 								disabled={questSaving}
 								title="Delete quest"
@@ -527,6 +529,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 						<div className="flex items-center gap-2">
 							<input
 								type="checkbox"
+								className="cursor-pointer"
 								id="geo-verified"
 								checked={newGeoPhoto.verified}
 								onChange={e => setNewGeoPhoto(p => ({ ...p, verified: e.target.checked }))}
@@ -543,7 +546,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 						<button
 							onClick={addGeoPhoto}
 							disabled={geoSaving}
-							className="bg-[#00AEEF] text-white px-4 py-2 rounded font-bold hover:bg-[#008CC1] disabled:opacity-50 w-full"
+							className="bg-[#00AEEF] text-white px-4 py-2 rounded font-bold hover:bg-[#008CC1] disabled:opacity-50 w-full cursor-pointer"
 						>
 							{geoSaving ? "Uploading..." : "Add GeoThinkr Photo"}
 						</button>
@@ -571,13 +574,13 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 													setGeoPhotos(s => s.map(x => x.photo_id === p.photo_id ? { ...x, verified: newVal } : x));
 												} catch { alert("Failed to toggle verified"); }
 											}}
-											className={`text-xs border px-2 py-1 rounded ${p.verified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-500'}`}
+											className={`text-xs border px-2 py-1 rounded ${p.verified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-500'} cursor-pointer`}
 										>
 											{p.verified ? '✓ Verified' : 'Unverified'}
 										</button>
 										<button
 											onClick={() => deleteGeoPhoto(p.photo_id)}
-											className="text-red-500 text-xs border px-2 py-1 rounded hover:bg-red-50"
+											className="text-red-500 text-xs border px-2 py-1 rounded hover:bg-red-50 cursor-pointer"
 										>
 											Delete
 										</button>
@@ -659,7 +662,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					<button
 						onClick={awardPoints}
 						disabled={pointsSaving}
-						className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 disabled:opacity-50"
+						className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 disabled:opacity-50 cursor-pointer"
 					>
 						{pointsSaving ? "Sending..." : "Award Points"}
 					</button>
