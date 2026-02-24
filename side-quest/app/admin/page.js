@@ -1,9 +1,9 @@
 /*
 	Name: admin/page.js
 	Description: A page for admin accounts to add and edit quests.
-	Programmers: Alejandro Sandoval
+	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 11/23/2025
-	Revisions: N/A
+	Revisions: 2/24/2026 - Admin Panel for GeoThinkr and Points
 	Errors: N/A
 	Input: A user account.
 	Output: If user is admin, show admin panel. Otherwise, redirect to homepage.

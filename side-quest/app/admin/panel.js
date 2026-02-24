@@ -1,9 +1,9 @@
 /*
 	Name: admin/panel.js
 	Description: A component for editing locations and quests.
-	Programmers: Alejandro Sandoval
+	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 11/23/2025
-	Revisions: N/A
+	Revisions: 2/24/2026 - Admin Panel for GeoThinkr and Points
 	Errors: N/A
 	Input: Lists of quests and locations.
 	Output: An editable interface for editing the lists of quests and locations.
