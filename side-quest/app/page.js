@@ -93,12 +93,14 @@ export default function Home() {
 						<p className="text-sm text-gray-600">A wide variety for each location</p>
 					</div>
 
-					{/* CARD: GeoThinkr */}
+					{/* COMMENTED OUT - Req 3: GeoThinkr CTA card on homepage */}
+					{/*
 					<Link href="/geothinkr" className="bg-white rounded-2xl p-6 border-4 border-[#00AEEF] shadow-[6px_6px_0_#FFDA00] hover:shadow-[8px_8px_0_#FFDA00] transform hover:scale-105 transition-all block">
 						<Target className="w-10 h-10 text-[#00AEEF] mx-auto mb-2" />
 						<p className="text-2xl font-bold text-[#FF7A00]">GeoThinkr</p>
 						<p className="text-sm text-gray-600">Guess campus photo locations on the map</p>
 					</Link>
+					*/}
 				</div>
 
 				{/* SECTION: CTA Button (animated background layers + hover shimmer) */}

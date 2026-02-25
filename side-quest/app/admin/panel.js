@@ -168,8 +168,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 		}
 	}
 
-	// 6. Photo Management
-    // GeoThinkr -- Logic handles image uploads and map pinning.
+	/* COMMENTED OUT - Req 4/5/6/7: GeoThinkr photo management functions
 	async function addGeoPhoto() {
 		if (!newGeoPhoto.file) return alert("Select a file");
 		if (!newGeoPhoto.name) return alert("Enter name");
@@ -198,7 +197,6 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			const created = await res.json();
 			setGeoPhotos(prev => [created, ...prev]);
 			setNewGeoPhoto({ file: null, name: "", x: 0, y: 0, category: "landmark", difficulty: "medium", verified: false });
-			// clear file input
 			const fileInput = document.getElementById("geo-file-input");
 			if (fileInput) fileInput.value = "";
 		} catch (err) {
@@ -221,6 +219,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			setGeoSaving(false);
 		}
 	}
+	*/
 
 	// 7. Point Distribution
     // Direct method grants points via student email.
@@ -472,14 +471,14 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 				</div>
 			</section>
 
-			{/* GEOTHINKR */}
+			{/* COMMENTED OUT - Req 4/5/6/7: GeoThinkr admin photo management UI */}
+			{/*
 			<section className="bg-white rounded shadow p-4">
 				<div className="flex items-center justify-between mb-4">
 					<h2 className="text-lg font-medium">GeoThinkr Photos</h2>
 				</div>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-					{/* Form Side */}
 					<div className="space-y-4">
 						<div className="space-y-2">
 							<label className="block text-sm font-medium">1. Choose Photo</label>
@@ -590,7 +589,6 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 						</div>
 					</div>
 
-					{/* Map Side */}
 					<div>
 						<div className="text-sm font-medium mb-2">Internal Map (Click to set location)</div>
 						<div
@@ -600,7 +598,6 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								const rect = e.currentTarget.getBoundingClientRect();
 								const clickX = e.clientX - rect.left;
 								const clickY = e.clientY - rect.top;
-								// Convert to original scale
 								const originalX = clickX / scale;
 								const originalY = clickY / scale;
 								setNewGeoPhoto(p => ({ ...p, x: originalX, y: originalY }));
@@ -611,7 +608,6 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								style={{ width: '100%', height: '100%', objectFit: 'contain' }}
 								draggable={false}
 							/>
-							{/* Marker */}
 							{newGeoPhoto.x > 0 && (
 								<div
 									className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
@@ -621,7 +617,6 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 									}}
 								/>
 							)}
-							{/* Show existing markers faintly? */}
 							{geoPhotos.map(p => (
 								<div
 									key={p.photo_id}
@@ -636,6 +631,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					</div>
 				</div>
 			</section>
+			*/}
 
 			{/* MANUAL POINTS */}
 			<section className="bg-white rounded shadow p-4">

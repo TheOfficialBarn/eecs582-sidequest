@@ -41,6 +41,7 @@ function getUser(req) {
 	Arguments: difficulty - "easy", "medium", or "hard"
 	Returns: { spotOnRadius, closeRadius } in pixels
 */
+/* COMMENTED OUT - Req 6/8: Difficulty-based scoring thresholds
 function getScoringThresholds(difficulty) {
 	switch (difficulty) {
 		case "easy": return { spotOnRadius: 100, closeRadius: 300 };
@@ -49,24 +50,18 @@ function getScoringThresholds(difficulty) {
 		default: return { spotOnRadius: 100, closeRadius: 300 };
 	}
 }
-
-/*
-	Function: checkAndAwardAchievements
-	Description: Checks achievement conditions and awards any newly earned achievements.
-	Arguments: supabase - admin client, userId - user UUID, latestTier - tier from current guess, hintsUsed - number of hints used
-	Returns: array of newly earned achievement names
 */
+
+/* COMMENTED OUT - Req 2: Achievement system
 async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed) {
 	const newlyEarned = [];
 
-	// Get all achievements
 	const { data: allAchievements } = await supabase
 		.from("achievements")
 		.select("achievement_id, key");
 
 	if (!allAchievements) return newlyEarned;
 
-	// Get already-earned achievements
 	const { data: earned } = await supabase
 		.from("user_achievements")
 		.select("achievement_id")
@@ -76,7 +71,6 @@ async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed
 	const achievementByKey = {};
 	allAchievements.forEach(a => { achievementByKey[a.key] = a; });
 
-	// Get user's full history for counting
 	const { data: history } = await supabase
 		.from("geothinkr_history")
 		.select("points_awarded, created_at, photo_id, geothinkr_photos(category)")
@@ -86,7 +80,6 @@ async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed
 	const totalGames = history?.length || 0;
 	const spotOns = history?.filter(h => h.points_awarded >= 500).length || 0;
 
-	// Helper to award if not already earned
 	async function tryAward(key) {
 		const ach = achievementByKey[key];
 		if (!ach || earnedIds.has(ach.achievement_id)) return;
@@ -98,25 +91,13 @@ async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed
 		earnedIds.add(ach.achievement_id);
 	}
 
-	// first_guess: completed first round
 	if (totalGames >= 1) await tryAward("first_guess");
-
-	// games_10
 	if (totalGames >= 10) await tryAward("games_10");
-
-	// games_50
 	if (totalGames >= 50) await tryAward("games_50");
-
-	// spot_on_5
 	if (spotOns >= 5) await tryAward("spot_on_5");
-
-	// spot_on_10
 	if (spotOns >= 10) await tryAward("spot_on_10");
-
-	// no_hints: got spot-on without using any hints
 	if (latestTier === "Spot-on!" && hintsUsed === 0) await tryAward("no_hints");
 
-	// perfect_streak_3: last 3 games all spot-on
 	if (history && history.length >= 3) {
 		const lastThree = history.slice(-3);
 		if (lastThree.every(h => h.points_awarded >= 500)) {
@@ -124,7 +105,6 @@ async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed
 		}
 	}
 
-	// all_categories: played at least one photo from every category
 	if (history) {
 		const playedCategories = new Set();
 		history.forEach(h => {
@@ -139,6 +119,7 @@ async function checkAndAwardAchievements(supabase, userId, latestTier, hintsUsed
 
 	return newlyEarned;
 }
+*/
 
 /*
 	Function: GET
@@ -162,11 +143,11 @@ export async function GET(req) {
 
 	const playedIds = new Set(history.map(h => h.photo_id));
 
-	// 2. Get all verified photos (difficulty only affects scoring/zoom, not photo selection)
+	// 2. Get all photos
+	/* COMMENTED OUT - Req 7: Verification filter - was .eq("verified", true) */
 	const { data: photos, error } = await supabase
 		.from("geothinkr_photos")
-		.select("photo_id, image_url, location_name, category")
-		.eq("verified", true);
+		.select("photo_id, image_url, location_name, category");
 
 	if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -198,7 +179,10 @@ export async function POST(req) {
 	if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 	const body = await req.json().catch(() => ({}));
+	/* COMMENTED OUT - Req 8/9: difficulty and hints_used params
 	const { photo_id, x, y, hints_used = 0, difficulty = "easy" } = body;
+	*/
+	const { photo_id, x, y } = body;
 
 	if (!photo_id || x === undefined || y === undefined) {
 		return NextResponse.json({ error: "Missing inputs" }, { status: 400 });
@@ -234,8 +218,11 @@ export async function POST(req) {
 	const dy = photo.y_coordinate - y;
 	const distance = Math.sqrt(dx * dx + dy * dy);
 
-	// Scoring with difficulty-based thresholds
+	/* COMMENTED OUT - Req 6/8: Difficulty-based scoring thresholds
 	const { spotOnRadius, closeRadius } = getScoringThresholds(difficulty);
+	*/
+	const spotOnRadius = 100;
+	const closeRadius = 300;
 
 	let basePoints = 0;
 	let tier = "Nope";
@@ -251,17 +238,20 @@ export async function POST(req) {
 		tier = "Nope";
 	}
 
-	// Deduct hint cost: each hint costs 100 points from base score
+	/* COMMENTED OUT - Req 9: Hint deduction system
 	const hintDeduction = Math.min(hints_used * 100, basePoints);
 	const points = Math.max(basePoints - hintDeduction, 0);
+	*/
+	const points = basePoints;
 
-	// Award points if > 0
+	/* COMMENTED OUT - Req 1: Link scores to user account points
 	if (points > 0) {
 		await supabase.rpc('increment_points', {
 			user_id: user.id,
 			amount: points
 		});
 	}
+	*/
 
 	// Record history
 	await supabase.from("geothinkr_history").insert([{
@@ -270,8 +260,9 @@ export async function POST(req) {
 		points_awarded: points
 	}]);
 
-	// Check and award achievements
+	/* COMMENTED OUT - Req 2: Achievement checking
 	const achievementsEarned = await checkAndAwardAchievements(supabase, user.id, tier, hints_used);
+	*/
 
 	// Return result including the correct location so client can draw the line
 	return NextResponse.json({
@@ -282,6 +273,8 @@ export async function POST(req) {
 		correct_y: photo.y_coordinate,
 		location_name: photo.location_name,
 		category: photo.category,
+		/* COMMENTED OUT - Req 2: achievements_earned field
 		achievements_earned: achievementsEarned
+		*/
 	});
 }

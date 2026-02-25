@@ -73,7 +73,7 @@ export default async function AccountPage() {
 		.eq("user_id", user.id)
 		.eq("completed", true);
 
-	// Fetch GeoThinkr stats
+	/* COMMENTED OUT - Req 1/2: GeoThinkr stats and achievements on profile
 	const { data: geoHistory } = await supabase
 		.from("geothinkr_history")
 		.select("points_awarded")
@@ -84,7 +84,6 @@ export default async function AccountPage() {
 	const geoTotalPoints = geoHistory?.reduce((sum, h) => sum + h.points_awarded, 0) || 0;
 	const geoAccuracy = geoTotalGames > 0 ? Math.round((geoSpotOns / geoTotalGames) * 100) : 0;
 
-	// Fetch achievements
 	const { data: allAchievements } = await supabase
 		.from("achievements")
 		.select("achievement_id, key, name, description, icon");
@@ -101,6 +100,7 @@ export default async function AccountPage() {
 		...a,
 		earned_at: earnedMap[a.achievement_id] || null
 	})) || [];
+	*/
 
 	// Organize completed quests by location
 	const completedByLocation = {};
@@ -209,7 +209,8 @@ export default async function AccountPage() {
 				</div>
 
 				{/* Completed Quests by Location */}
-				{/* GeoThinkr Stats */}
+				{/* COMMENTED OUT - Req 1/2: GeoThinkr Stats and Achievements display on profile */}
+				{/*
 			<div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9500] text-white rounded-lg shadow-lg p-6 mb-6">
 				<div className="flex items-center gap-2 mb-4">
 					<Target className="w-6 h-6" />
@@ -235,7 +236,6 @@ export default async function AccountPage() {
 				</div>
 			</div>
 
-			{/* Achievements */}
 			{achievements.length > 0 && (
 				<div className="mb-6">
 					<h3 className="text-xl font-bold text-[#FF7A00] mb-3 flex items-center gap-2">
@@ -266,6 +266,7 @@ export default async function AccountPage() {
 					</div>
 				</div>
 			)}
+			*/}
 
 			{totalCompleted > 0 ? (
 					<div className="space-y-4">

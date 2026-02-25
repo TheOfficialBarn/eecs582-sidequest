@@ -30,13 +30,17 @@ const TOTAL_ROUNDS = 5;
 */
 export default function GeoThinkrPage() {
 	const [gameState, setGameState] = useState('menu'); // menu, loading, playing, result, error, empty, summary
+	/* COMMENTED OUT - Req 8: Difficulty selection
 	const [difficulty, setDifficulty] = useState(null);
+	*/
 	const [photo, setPhoto] = useState(null);
 	const [result, setResult] = useState(null);
 	const [guess, setGuess] = useState(null);
+	/* COMMENTED OUT - Req 9: Hint system state
 	const [hintsUsed, setHintsUsed] = useState(0);
 	const [hint1Revealed, setHint1Revealed] = useState(false);
 	const [hint2Revealed, setHint2Revealed] = useState(false);
+	*/
 	const mapRef = useRef(null);
 
 	// Multi-round state
@@ -51,8 +55,12 @@ export default function GeoThinkrPage() {
 	// Refs for stale closure avoidance in timer callback
 	const guessRef = useRef(null);
 	const photoRef = useRef(null);
+	/* COMMENTED OUT - Req 9: Hint ref
 	const hintsUsedRef = useRef(0);
+	*/
+	/* COMMENTED OUT - Req 8: Difficulty ref
 	const difficultyRef = useRef(null);
+	*/
 	const mapContainerRef = useRef(null);
 	const submitGuessRef = useRef(null);
 
@@ -62,15 +70,12 @@ export default function GeoThinkrPage() {
 	// Keep refs in sync with state
 	useEffect(() => { guessRef.current = guess; }, [guess]);
 	useEffect(() => { photoRef.current = photo; }, [photo]);
+	/* COMMENTED OUT - Req 8/9: Difficulty and hints refs sync
 	useEffect(() => { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);
 	useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
-
-	/*
-		Function: getMapZoom
-		Description: Returns CSS transform scale and offset config based on difficulty.
-		Arguments: diff - difficulty string
-		Returns: { scale, description }
 	*/
+
+	/* COMMENTED OUT - Req 8: Difficulty-based map zoom
 	function getMapZoom(diff) {
 		switch (diff) {
 			case "easy": return { scale: 2.5, description: "Zoomed into a campus section" };
@@ -79,6 +84,7 @@ export default function GeoThinkrPage() {
 			default: return { scale: 1, description: "Full campus map" };
 		}
 	}
+	*/
 
 	/*
 		Function: loadNewGame
@@ -90,9 +96,11 @@ export default function GeoThinkrPage() {
 		setGameState('loading');
 		setResult(null);
 		setGuess(null);
+		/* COMMENTED OUT - Req 9: Hint reset
 		setHintsUsed(0);
 		setHint1Revealed(false);
 		setHint2Revealed(false);
+		*/
 		try {
 			let url = "/api/geothinkr/game";
 			if (excludeIds.length > 0) {
@@ -134,14 +142,22 @@ export default function GeoThinkrPage() {
 	/*
 		Function: startGame
 		Description: Resets all session state and begins a new multi-round game.
-		Arguments: diff - "easy", "medium", or "hard"
+		Arguments: none
 		Returns: void
 	*/
+	/* COMMENTED OUT - Req 8: Difficulty parameter
 	function startGame(diff) {
 		setCurrentRound(1);
 		setRoundResults([]);
 		setSessionPhotoIds([]);
 		setDifficulty(diff);
+		loadNewGame([]);
+	}
+	*/
+	function startGame() {
+		setCurrentRound(1);
+		setRoundResults([]);
+		setSessionPhotoIds([]);
 		loadNewGame([]);
 	}
 
@@ -163,8 +179,10 @@ export default function GeoThinkrPage() {
 					photo_id: currentPhoto.photo_id,
 					x: Math.round(x),
 					y: Math.round(y),
+					/* COMMENTED OUT - Req 8/9: difficulty and hints params
 					hints_used: hintsUsedRef.current,
 					difficulty: difficultyRef.current || "easy"
+					*/
 				})
 			});
 
@@ -194,7 +212,9 @@ export default function GeoThinkrPage() {
 				distance: data.distance,
 				tier: data.tier,
 				points: data.points,
+				/* COMMENTED OUT - Req 9: Hints tracking
 				hintsUsed: hintsUsedRef.current
+				*/
 			}]);
 
 			setGameState('result');
@@ -268,7 +288,9 @@ export default function GeoThinkrPage() {
 		setCurrentRound(1);
 		setRoundResults([]);
 		setSessionPhotoIds([]);
+		/* COMMENTED OUT - Req 8: Difficulty reset
 		setDifficulty(null);
+		*/
 		setTimeLimit(null);
 		setTimeRemaining(null);
 		setResult(null);
@@ -311,7 +333,7 @@ export default function GeoThinkrPage() {
 		}
 	}
 
-	// Difficulty selection menu
+	// Start menu
 	if (gameState === 'menu') {
 		return (
 			<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center justify-center p-4">
@@ -348,6 +370,7 @@ export default function GeoThinkrPage() {
 						</div>
 					</div>
 
+					{/* COMMENTED OUT - Req 8: Difficulty selection buttons
 					<div className="space-y-4">
 						<button
 							onClick={() => startGame("easy")}
@@ -371,6 +394,14 @@ export default function GeoThinkrPage() {
 							<div className="text-sm text-gray-600">Full map · Tight scoring radius</div>
 						</button>
 					</div>
+					*/}
+					<button
+						onClick={() => startGame()}
+						className="w-full bg-white border-4 border-[#FF7A00] text-[#FF7A00] rounded-2xl p-6 shadow-[6px_6px_0_#00AEEF] hover:shadow-[8px_8px_0_#00AEEF] hover:scale-[1.02] transition-all"
+					>
+						<div className="text-2xl font-bold">Start Game</div>
+						<div className="text-sm text-gray-600">5 rounds · Guess the campus location</div>
+					</button>
 				</div>
 			</div>
 		);
@@ -418,7 +449,8 @@ export default function GeoThinkrPage() {
 					<div className="bg-white rounded-2xl shadow-lg border-4 border-[#FF7A00] p-8 text-center">
 						<Trophy className="w-16 h-16 text-[#FFDA00] mx-auto mb-4" />
 						<h1 className="text-3xl font-black text-[#FF7A00] mb-1">Game Complete!</h1>
-						<p className="text-gray-500 mb-6">{roundsPlayed} round{roundsPlayed !== 1 ? 's' : ''} played · {difficulty?.toUpperCase()} difficulty</p>
+						{/* COMMENTED OUT - Req 8: Difficulty display in summary */}
+						<p className="text-gray-500 mb-6">{roundsPlayed} round{roundsPlayed !== 1 ? 's' : ''} played</p>
 
 						{/* Total Score */}
 						<div className="bg-gradient-to-r from-[#FF7A00] to-[#FFDA00] rounded-2xl p-6 mb-6 text-white">
@@ -435,9 +467,11 @@ export default function GeoThinkrPage() {
 									</div>
 									<div className="flex-1 min-w-0">
 										<div className="font-bold text-gray-800 truncate">{r.location_name || 'Unknown'}</div>
+										{/* COMMENTED OUT - Req 9: Hint usage display in summary
 										{r.hintsUsed > 0 && (
 											<div className="text-xs text-yellow-600">{r.hintsUsed} hint{r.hintsUsed !== 1 ? 's' : ''} used</div>
 										)}
+										*/}
 									</div>
 									<span className={`text-xs font-bold px-2 py-1 rounded-full border flex-shrink-0 ${getTierColor(r.tier)}`}>
 										{r.tier}
@@ -459,7 +493,9 @@ export default function GeoThinkrPage() {
 		);
 	}
 
+	/* COMMENTED OUT - Req 8: Difficulty-based zoom
 	const zoom = getMapZoom(difficulty);
+	*/
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center p-4">
@@ -468,11 +504,13 @@ export default function GeoThinkrPage() {
 				<div className="flex items-center gap-3">
 					<Lightbulb className="w-8 h-8 text-[#FF7A00]" />
 					<h1 className="text-2xl font-black text-[#FF7A00]">GeoThinkr</h1>
+					{/* COMMENTED OUT - Req 8: Difficulty badge
 					<span className={`text-xs font-bold px-2 py-1 rounded-full ${
 						difficulty === 'easy' ? 'bg-[#00AEEF]/10 text-[#00AEEF]' :
 						difficulty === 'medium' ? 'bg-[#FF7A00]/10 text-[#FF7A00]' :
 						'bg-red-100 text-red-700'
 					}`}>{difficulty?.toUpperCase()}</span>
+					*/}
 				</div>
 				<div className="flex items-center gap-4">
 					{/* Round Counter */}
@@ -510,7 +548,7 @@ export default function GeoThinkrPage() {
 							/>
 						)}
 
-						{/* Hint Buttons */}
+						{/* COMMENTED OUT - Req 9: Hint buttons
 						{gameState === 'playing' && (
 							<div className="absolute bottom-4 left-4 right-4 flex gap-2">
 								<button
@@ -541,6 +579,7 @@ export default function GeoThinkrPage() {
 								</button>
 							</div>
 						)}
+						*/}
 
 						{/* Result Overlay on Photo */}
 						{result && (
@@ -554,9 +593,11 @@ export default function GeoThinkrPage() {
 									<p className="text-xs opacity-60 mb-4">Category: {result.category}</p>
 								)}
 
+								{/* COMMENTED OUT - Req 9: Hints used display
 								{hintsUsed > 0 && (
 									<p className="text-xs text-yellow-300 mb-2">Hints used: {hintsUsed} (-{hintsUsed * 100} pts)</p>
 								)}
+							*/}
 
 								<div className="flex items-center justify-center gap-4">
 									<div className="text-center">
@@ -565,6 +606,7 @@ export default function GeoThinkrPage() {
 									</div>
 								</div>
 
+								{/* COMMENTED OUT - Req 2: Achievement unlock notifications
 								{result.achievements_earned && result.achievements_earned.length > 0 && (
 									<div className="mt-3 flex justify-center gap-2 flex-wrap">
 										{result.achievements_earned.map(key => (
@@ -574,6 +616,7 @@ export default function GeoThinkrPage() {
 										))}
 									</div>
 								)}
+							*/}
 
 								<button
 									onClick={handleNextRound}
@@ -597,19 +640,23 @@ export default function GeoThinkrPage() {
 							ref={(el) => { mapRef.current = el; mapContainerRef.current = el; }}
 							className="relative w-full h-full overflow-hidden"
 							onClick={handleMapClick}
+							/* COMMENTED OUT - Req 8: Zoom-based overflow style
 							style={zoom.scale > 1 ? {
 								overflow: 'hidden'
 							} : {}}
+							*/
 						>
 							<img
 								src="/map.png"
 								className="w-full h-full object-fill"
 								alt="Game Map"
 								draggable={false}
+								/* COMMENTED OUT - Req 8: Zoom transform based on difficulty
 								style={zoom.scale > 1 ? {
 									transform: `scale(${zoom.scale})`,
 									transformOrigin: 'center center'
 								} : {}}
+								*/
 							/>
 
 							{/* Hover effect prompt */}

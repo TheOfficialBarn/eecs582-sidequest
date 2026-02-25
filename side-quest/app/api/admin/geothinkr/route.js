@@ -10,6 +10,7 @@
 */
 
 import { NextResponse } from "next/server";
+/* COMMENTED OUT - Req 4/5/6/7: Admin GeoThinkr photo management API
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
@@ -38,7 +39,6 @@ export async function POST(req) {
 	const fileExt = file.name.split('.').pop();
 	const fileName = `geo_${Date.now()}.${fileExt}`;
 
-	// Upload to storage
 	const arrayBuffer = await file.arrayBuffer();
 	const buffer = Buffer.from(arrayBuffer);
 
@@ -61,7 +61,6 @@ export async function POST(req) {
 	const difficulty = formData.get("difficulty") || "medium";
 	const verified = formData.get("verified") === "true";
 
-	// Save to DB
 	const { data, error: dbError } = await supabase
 		.from("geothinkr_photos")
 		.insert([{
@@ -83,12 +82,6 @@ export async function POST(req) {
 	return NextResponse.json(data, { status: 201 });
 }
 
-/*
-	Function: PATCH
-	Description: Toggles verified status or updates category/difficulty on a photo.
-	Arguments: req - Request with JSON { id, verified?, category?, difficulty? }
-	Returns: Updated photo record or error
-*/
 export async function PATCH(req) {
 	const body = await req.json().catch(() => ({}));
 	const { id, ...updates } = body;
@@ -122,11 +115,6 @@ export async function DELETE(req) {
 
 	const supabase = createAdminClient();
 
-	// Ideally we should delete from storage too but filename is not stored directly, 
-	// we have URL. Can parse it or just leave it for now (soft delete).
-	// To be clean: retrieve record, parse URL, delete file.
-
-	// Delete from DB
 	const { error } = await supabase
 		.from("geothinkr_photos")
 		.delete()
@@ -135,4 +123,22 @@ export async function DELETE(req) {
 	if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
 	return NextResponse.json({ success: true });
+}
+*/
+
+// Stubs while admin photo management is disabled
+export async function GET() {
+	return NextResponse.json([]);
+}
+
+export async function POST() {
+	return NextResponse.json({ error: "Admin photo management is disabled" }, { status: 403 });
+}
+
+export async function PATCH() {
+	return NextResponse.json({ error: "Admin photo management is disabled" }, { status: 403 });
+}
+
+export async function DELETE() {
+	return NextResponse.json({ error: "Admin photo management is disabled" }, { status: 403 });
 }
