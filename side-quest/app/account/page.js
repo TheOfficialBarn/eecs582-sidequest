@@ -3,7 +3,10 @@
 	Description: Account configuration page with completed quests dashboard.
 	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 10/25/2025
-	Revisions: Added completed quests display - 10/26/2025, Added GeoThinkr stats + achievements - 2/19/2026
+	Revisions:
+		Added completed quests display – 10/26/2025
+		Added GeoThinkr stats + achievements – 2/19/2026
+		3/15/2026 – feat: display GeoThinkr achievements and stats on user profile
 	Errors: N/A
 	Input: email, username, user information from server
 	Output: Account page showing user info
