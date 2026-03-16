@@ -1,11 +1,12 @@
 /*
 	Name: admin/route.js
-	Description: API endpoint for geothinkr admin options
+	Description: API endpoint for GeoThinkr admin options.
 	Programmers: Aiden Barnard
 	Date: 2/09/2026
-	Revisions: N/A
+	Revisions:
+		3/15/2026 – feat: add admin interface for GeoThinkr photo management
 	Errors: N/A
-	Input: Admin operations
+	Input: Admin operations.
 	Output: Commits and queries to the database.
 */
 
