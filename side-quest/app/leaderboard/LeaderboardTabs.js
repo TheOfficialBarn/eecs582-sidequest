@@ -3,7 +3,8 @@
 	Description: Client component providing tabbed navigation between Quest and GeoThinkr leaderboards.
 	Programmers: Pashia Vang
 	Date: 2/19/2026
-	Revisions: N/A
+	Revisions:
+		3/15/2026 – feat: merge GeoThinkr leaderboard into main leaderboard page
 	Errors: N/A
 	Input: questLeaders - array of quest leaderboard entries, geoLeaders - array of GeoThinkr leaderboard entries
 	Output: Tabbed leaderboard UI with Quest and GeoThinkr sections
