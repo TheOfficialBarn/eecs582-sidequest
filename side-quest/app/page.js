@@ -3,7 +3,9 @@
 	Description: Main landing page of Side Quest with hero section, stats, and CTA.
 	Programmers: Aiden Barnard, Alejandro Sandoval, Pashia Vang
 	Date: 10/25/2025
-	Revisions: Update UI style - 10/26/2025
+	Revisions:
+		Update UI style – 10/26/2025
+		3/15/2026 – feat: add GeoThinkr card to homepage
 	Errors: N/A
 	Input:
 		Home navigation or initial website load
