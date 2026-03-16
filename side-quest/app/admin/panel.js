@@ -3,11 +3,14 @@
 	Description: A component for editing locations and quests.
 	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 11/23/2025
-	Revisions: 2/24/2026 - Admin Panel for GeoThinkr and Points
+	Revisions: 
+		2/24/2026 – Admin Panel for GeoThinkr and Points
+		3/15/2026 – Fixed buttons not changing cursor
 	Errors: N/A
 	Input: Lists of quests and locations.
 	Output: An editable interface for editing the lists of quests and locations.
 */
+
 
 "use client";
 
