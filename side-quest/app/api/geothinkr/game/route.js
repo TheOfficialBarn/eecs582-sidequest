@@ -6,16 +6,17 @@
 	Date: 2/15/2025
 	Revisions: Integrated scoring + history tracking - 11/06/2025,
 	           Added difficulty filter, hints, verified filter, achievements - 2/19/2026,
-	           Added exclude param for multi-round sessions - 2/19/2026
+	           Added exclude param for multi-round sessions - 2/19/2026,
+	           Added speed bonus for timed mode - 03/29/2026
 	Errors: 401 Unauthorized, 404 Not found, 409 Already played, 500 Server error
 
 	Input:
 		GET: Authenticated request (session cookie "sid")
-		POST: JSON { photo_id, x, y, hints_used?, difficulty? }
+		POST: JSON { photo_id, x, y, hints_used?, difficulty?, time_remaining?, time_limit? }
 
 	Output:
 		GET: { photo_id, image_url, location_name, category }
-		POST: { distance, points, tier, correct_x, correct_y, location_name, category, achievements_earned }
+		POST: { distance, points, speed_bonus, tier, correct_x, correct_y, location_name, category, achievements_earned }
 */
 
 import { NextResponse } from "next/server";
@@ -198,7 +199,7 @@ export async function POST(req) {
 	if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 	const body = await req.json().catch(() => ({}));
-	const { photo_id, x, y, hints_used = 0, difficulty = "easy" } = body;
+	const { photo_id, x, y, hints_used = 0, difficulty = "easy", time_remaining, time_limit } = body;
 
 	if (!photo_id || x === undefined || y === undefined) {
 		return NextResponse.json({ error: "Missing inputs" }, { status: 400 });
@@ -253,7 +254,13 @@ export async function POST(req) {
 
 	// Deduct hint cost: each hint costs 100 points from base score
 	const hintDeduction = Math.min(hints_used * 100, basePoints);
-	const points = Math.max(basePoints - hintDeduction, 0);
+	const afterHints = Math.max(basePoints - hintDeduction, 0);
+
+	// Speed bonus: up to 200 extra points scaling with time remaining (only when timed)
+	const speedBonus = (afterHints > 0 && time_remaining > 0 && time_limit > 0)
+		? Math.round((time_remaining / time_limit) * 200)
+		: 0;
+	const points = afterHints + speedBonus;
 
 	// Award points if > 0
 	if (points > 0) {
@@ -277,6 +284,7 @@ export async function POST(req) {
 	return NextResponse.json({
 		distance,
 		points,
+		speed_bonus: speedBonus,
 		tier,
 		correct_x: photo.x_coordinate,
 		correct_y: photo.y_coordinate,

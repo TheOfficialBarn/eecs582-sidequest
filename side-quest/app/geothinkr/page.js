@@ -5,7 +5,8 @@
 	Programmers: Aiden Barnard
 	Date: 2/09/2026
 	Revisions: Added difficulty picker, hints, zoom, leaderboard link - 2/19/2026,
-	           Added timer, multi-round game, and end-game summary - 2/19/2026
+	           Added timer, multi-round game, and end-game summary - 2/19/2026,
+	           Added speed bonus for timed mode - 03/29/2026
 	Errors: N/A
 	Input:
 		- User auth token (cookie)
@@ -53,6 +54,8 @@ export default function GeoThinkrPage() {
 	const photoRef = useRef(null);
 	const hintsUsedRef = useRef(0);
 	const difficultyRef = useRef(null);
+	const timeLimitRef = useRef(null);
+	const timeRemainingRef = useRef(null);
 	const mapContainerRef = useRef(null);
 	const submitGuessRef = useRef(null);
 
@@ -64,6 +67,8 @@ export default function GeoThinkrPage() {
 	useEffect(() => { photoRef.current = photo; }, [photo]);
 	useEffect(() => { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);
 	useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
+	useEffect(() => { timeLimitRef.current = timeLimit; }, [timeLimit]);
+	useEffect(() => { timeRemainingRef.current = timeRemaining; }, [timeRemaining]);
 
 	/*
 		Function: getMapZoom
@@ -164,7 +169,9 @@ export default function GeoThinkrPage() {
 					x: Math.round(x),
 					y: Math.round(y),
 					hints_used: hintsUsedRef.current,
-					difficulty: difficultyRef.current || "easy"
+					difficulty: difficultyRef.current || "easy",
+					time_remaining: timeRemainingRef.current,
+					time_limit: timeLimitRef.current
 				})
 			});
 
@@ -194,6 +201,7 @@ export default function GeoThinkrPage() {
 				distance: data.distance,
 				tier: data.tier,
 				points: data.points,
+				speed_bonus: data.speed_bonus || 0,
 				hintsUsed: hintsUsedRef.current
 			}]);
 
@@ -346,6 +354,9 @@ export default function GeoThinkrPage() {
 								</button>
 							))}
 						</div>
+						{timeLimit !== null && (
+							<p className="text-xs text-gray-400 mt-2">Faster answers earn up to +200 bonus points!</p>
+						)}
 					</div>
 
 					<div className="space-y-4">
@@ -437,6 +448,9 @@ export default function GeoThinkrPage() {
 										<div className="font-bold text-gray-800 truncate">{r.location_name || 'Unknown'}</div>
 										{r.hintsUsed > 0 && (
 											<div className="text-xs text-yellow-600">{r.hintsUsed} hint{r.hintsUsed !== 1 ? 's' : ''} used</div>
+										)}
+										{r.speed_bonus > 0 && (
+											<div className="text-xs text-cyan-600">+{r.speed_bonus} speed bonus</div>
 										)}
 									</div>
 									<span className={`text-xs font-bold px-2 py-1 rounded-full border flex-shrink-0 ${getTierColor(r.tier)}`}>
@@ -555,7 +569,10 @@ export default function GeoThinkrPage() {
 								)}
 
 								{hintsUsed > 0 && (
-									<p className="text-xs text-yellow-300 mb-2">Hints used: {hintsUsed} (-{hintsUsed * 100} pts)</p>
+									<p className="text-xs text-yellow-300 mb-1">Hints used: {hintsUsed} (-{hintsUsed * 100} pts)</p>
+								)}
+								{result.speed_bonus > 0 && (
+									<p className="text-xs text-cyan-300 mb-1">Speed bonus: +{result.speed_bonus} pts</p>
 								)}
 
 								<div className="flex items-center justify-center gap-4">
