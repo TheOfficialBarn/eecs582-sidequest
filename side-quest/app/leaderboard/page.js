@@ -8,6 +8,7 @@
 		Add functional list of user rankings – 11/22/2025
 		Merged GeoThinkr leaderboard into tabbed view – 2/19/2026
 		3/15/2026 – feat: merge GeoThinkr leaderboard into main leaderboard page
+		3/29/2026 – feat: add daily/weekly/all-time tabs for GeoThinkr leaderboard
 	Errors: N/A
 	Input: Global user progress data and GeoThinkr history from the server
 	Output: Leaderboard page displaying user rankings for quests and GeoThinkr
@@ -72,12 +73,12 @@ export default async function LeaderboardsPage() {
 	// --- GeoThinkr Leaderboard Data ---
 	const { data: geoHistory, error: geoErr } = await supabase
 		.from("geothinkr_history")
-		.select("user_id, points_awarded, users(name)");
+		.select("user_id, points_awarded, created_at, users(name)");
 
-	let geoLeaders = [];
-	if (!geoErr && geoHistory) {
+	// Aggregate GeoThinkr history into leaderboard entries for a given time filter
+	function buildGeoLeaders(rows) {
 		const userMap = {};
-		geoHistory.forEach(h => {
+		rows.forEach(h => {
 			const uid = h.user_id;
 			if (!userMap[uid]) {
 				const u = Array.isArray(h.users) ? h.users[0] : h.users;
@@ -94,15 +95,28 @@ export default async function LeaderboardsPage() {
 			if (h.points_awarded >= 500) userMap[uid].spotOns += 1;
 		});
 
-		geoLeaders = Object.values(userMap)
-			.sort((a, b) => b.totalPoints - a.totalPoints)
+		return Object.values(userMap)
+			.sort((a, b) => b.totalPoints - a.totalPoints || b.spotOns - a.spotOns)
 			.slice(0, 50);
+	}
+
+	const now = new Date();
+	const dayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+	const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+	let geoAllTime = [];
+	let geoWeekly = [];
+	let geoDaily = [];
+	if (!geoErr && geoHistory) {
+		geoAllTime = buildGeoLeaders(geoHistory);
+		geoWeekly = buildGeoLeaders(geoHistory.filter(h => h.created_at >= weekAgo));
+		geoDaily = buildGeoLeaders(geoHistory.filter(h => h.created_at >= dayAgo));
 	}
 
 	return (
 		<div className="max-w-6xl mx-auto p-8">
 			<h2 className="text-3xl font-bold mb-6 text-[#FF7A00]">Leaderboard</h2>
-			<LeaderboardTabs questLeaders={questLeaders} geoLeaders={geoLeaders} />
+			<LeaderboardTabs questLeaders={questLeaders} geoAllTime={geoAllTime} geoWeekly={geoWeekly} geoDaily={geoDaily} />
 		</div>
 	);
 }

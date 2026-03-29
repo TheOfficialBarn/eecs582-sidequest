@@ -5,6 +5,7 @@
 	Date: 2/19/2026
 	Revisions:
 		3/15/2026 – feat: merge GeoThinkr leaderboard into main leaderboard page
+		3/29/2026 – feat: add daily/weekly/all-time sub-tabs for GeoThinkr
 	Errors: N/A
 	Input: questLeaders - array of quest leaderboard entries, geoLeaders - array of GeoThinkr leaderboard entries
 	Output: Tabbed leaderboard UI with Quest and GeoThinkr sections
@@ -17,14 +18,18 @@ import { Trophy, Medal, Lightbulb } from "lucide-react";
 
 /*
 	Component: LeaderboardTabs
-	Description: Renders a tabbed interface switching between Quest and GeoThinkr leaderboards.
+	Description: Renders a tabbed interface switching between Quest and GeoThinkr leaderboards,
+	             with daily/weekly/all-time sub-tabs for GeoThinkr.
 	Props:
 		questLeaders - array of { userId, displayName, completedCount }
-		geoLeaders - array of { userId, name, totalPoints, totalGames, spotOns }
+		geoAllTime - array of { userId, name, totalPoints, totalGames, spotOns }
+		geoWeekly - array of { userId, name, totalPoints, totalGames, spotOns }
+		geoDaily - array of { userId, name, totalPoints, totalGames, spotOns }
 	Returns: JSX element for tabbed leaderboard
 */
-export default function LeaderboardTabs({ questLeaders, geoLeaders }) {
+export default function LeaderboardTabs({ questLeaders, geoAllTime, geoWeekly, geoDaily }) {
 	const [activeTab, setActiveTab] = useState("quests");
+	const [geoPeriod, setGeoPeriod] = useState("all-time");
 
 	/*
 		Function: getRankStyle
@@ -92,13 +97,36 @@ export default function LeaderboardTabs({ questLeaders, geoLeaders }) {
 			)}
 
 			{/* GeoThinkr Leaderboard */}
-			{activeTab === "geothinkr" && (
+			{activeTab === "geothinkr" && (() => {
+				const geoLeaders = geoPeriod === "daily" ? geoDaily : geoPeriod === "weekly" ? geoWeekly : geoAllTime;
+				return (
 				<div>
+					{/* Time period sub-tabs */}
+					<div className="flex gap-1 mb-4">
+						{[
+							{ key: "daily", label: "Daily" },
+							{ key: "weekly", label: "Weekly" },
+							{ key: "all-time", label: "All-Time" },
+						].map(tab => (
+							<button
+								key={tab.key}
+								onClick={() => setGeoPeriod(tab.key)}
+								className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+									geoPeriod === tab.key
+										? "bg-[#00AEEF] text-white shadow"
+										: "bg-gray-100 text-gray-600 hover:bg-gray-200"
+								}`}
+							>
+								{tab.label}
+							</button>
+						))}
+					</div>
+
 					{geoLeaders.length === 0 ? (
 						<div className="bg-white rounded-lg shadow-lg p-8 text-center">
 							<Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
 							<h2 className="text-xl font-bold text-gray-800 mb-2">No scores yet!</h2>
-							<p className="text-gray-500">Be the first to play GeoThinkr.</p>
+							<p className="text-gray-500">{geoPeriod === "daily" ? "No games played today." : geoPeriod === "weekly" ? "No games played this week." : "Be the first to play GeoThinkr."}</p>
 						</div>
 					) : (
 						<div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -128,7 +156,8 @@ export default function LeaderboardTabs({ questLeaders, geoLeaders }) {
 						</div>
 					)}
 				</div>
-			)}
+				);
+			})()}
 		</div>
 	);
 }
