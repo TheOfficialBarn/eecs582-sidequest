@@ -6,6 +6,7 @@
 	Revisions:
 		3/15/2026 – feat: merge GeoThinkr leaderboard into main leaderboard page
 		3/29/2026 – feat: add daily/weekly/all-time sub-tabs for GeoThinkr
+		3/29/2026 – feat: add staggered row animations on load and tab switch
 	Errors: N/A
 	Input: questLeaders - array of quest leaderboard entries, geoLeaders - array of GeoThinkr leaderboard entries
 	Output: Tabbed leaderboard UI with Quest and GeoThinkr sections
@@ -15,6 +16,7 @@
 
 import { useState } from "react";
 import { Trophy, Medal, Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 
 /*
 	Component: LeaderboardTabs
@@ -78,8 +80,11 @@ export default function LeaderboardTabs({ questLeaders, geoAllTime, geoWeekly, g
 					) : (
 						<ol className="space-y-2">
 							{questLeaders.map((row, i) => (
-								<li
+								<motion.li
 									key={row.userId}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.3, delay: i * 0.05 }}
 									className="flex items-center justify-between gap-4 bg-white rounded-lg p-4 shadow-lg"
 								>
 									<div className="flex items-center gap-4">
@@ -89,7 +94,7 @@ export default function LeaderboardTabs({ questLeaders, geoAllTime, geoWeekly, g
 										</div>
 									</div>
 									<div className="text-lg font-semibold text-[#FF7A00]">{`Completed quests: ${row.completedCount}`}</div>
-								</li>
+								</motion.li>
 							))}
 						</ol>
 					)}
@@ -134,9 +139,15 @@ export default function LeaderboardTabs({ questLeaders, geoAllTime, geoWeekly, g
 								<Trophy className="w-6 h-6" />
 								<span className="font-bold text-lg">Top Players</span>
 							</div>
-							<div className="divide-y">
+							<div className="divide-y" key={geoPeriod}>
 								{geoLeaders.map((player, index) => (
-									<div key={player.userId} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50">
+									<motion.div
+										key={player.userId}
+										initial={{ opacity: 0, x: -20 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ duration: 0.3, delay: index * 0.05 }}
+										className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50"
+									>
 										<div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${getRankStyle(index)}`}>
 											{index < 3 ? <Medal className="w-4 h-4" /> : index + 1}
 										</div>
@@ -150,7 +161,7 @@ export default function LeaderboardTabs({ questLeaders, geoAllTime, geoWeekly, g
 											<div className="font-bold text-[#FF7A00]">{player.totalPoints}</div>
 											<div className="text-xs text-gray-500">points</div>
 										</div>
-									</div>
+									</motion.div>
 								))}
 							</div>
 						</div>
