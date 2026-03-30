@@ -6,7 +6,8 @@
 	Date: 2/09/2026
 	Revisions: Added difficulty picker, hints, zoom, leaderboard link - 2/19/2026,
 	           Added timer, multi-round game, and end-game summary - 2/19/2026,
-	           Added speed bonus for timed mode - 03/29/2026
+	           Added speed bonus for timed mode - 03/29/2026,
+	           Added share score feature - 03/29/2026
 	Errors: N/A
 	Input:
 		- User auth token (cookie)
@@ -18,7 +19,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Trophy, Lightbulb, RefreshCw, X, HelpCircle, Eye, Clock } from "lucide-react";
+import { Trophy, Lightbulb, RefreshCw, X, HelpCircle, Eye, Clock, Share2, Check } from "lucide-react";
 
 const TOTAL_ROUNDS = 5;
 
@@ -38,6 +39,7 @@ export default function GeoThinkrPage() {
 	const [hintsUsed, setHintsUsed] = useState(0);
 	const [hint1Revealed, setHint1Revealed] = useState(false);
 	const [hint2Revealed, setHint2Revealed] = useState(false);
+	const [copied, setCopied] = useState(false);
 	const mapRef = useRef(null);
 
 	// Multi-round state
@@ -272,6 +274,19 @@ export default function GeoThinkrPage() {
 		Arguments: none
 		Returns: void
 	*/
+	async function handleShare(totalScore, maxPossible) {
+		const spotOns = roundResults.filter(r => r.tier === "Spot-on!").length;
+		const text = `I scored ${totalScore}/${maxPossible} on GeoThinkr (${difficulty?.toUpperCase()})! ${spotOns} spot-on${spotOns !== 1 ? 's' : ''} out of ${TOTAL_ROUNDS} rounds`;
+
+		if (navigator.share) {
+			await navigator.share({ text });
+		} else {
+			await navigator.clipboard.writeText(text);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		}
+	}
+
 	function handleNewGame() {
 		setCurrentRound(1);
 		setRoundResults([]);
@@ -461,12 +476,20 @@ export default function GeoThinkrPage() {
 							))}
 						</div>
 
-						<button
-							onClick={handleNewGame}
-							className="w-full bg-[#FF7A00] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#FF9500] hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-2"
-						>
-							<RefreshCw className="w-5 h-5" /> Play Again
-						</button>
+						<div className="flex gap-3">
+							<button
+								onClick={() => handleShare(totalScore, maxPossible)}
+								className="flex-1 bg-[#00AEEF] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#0096D6] hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-2"
+							>
+								{copied ? <><Check className="w-5 h-5" /> Copied!</> : <><Share2 className="w-5 h-5" /> Share</>}
+							</button>
+							<button
+								onClick={handleNewGame}
+								className="flex-1 bg-[#FF7A00] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#FF9500] hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-2"
+							>
+								<RefreshCw className="w-5 h-5" /> Play Again
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
