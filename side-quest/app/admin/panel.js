@@ -6,6 +6,7 @@
 	Revisions: 
 		2/24/2026 – Admin Panel for GeoThinkr and Points
 		3/15/2026 – Fixed buttons not changing cursor
+		3/29/2026 – Made admin panel responsive for mobile
 	Errors: N/A
 	Input: Lists of quests and locations.
 	Output: An editable interface for editing the lists of quests and locations.
@@ -55,8 +56,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 
 	// 2. Map Scaling
     // Calculation determines scale so clicks land in the right spot.
-	const scale = ADMIN_MAP_WIDTH / MAP_WIDTH_ORIGINAL;
-	const ADMIN_MAP_HEIGHT = MAP_HEIGHT_ORIGINAL * scale;
+	// scale and ADMIN_MAP_HEIGHT no longer needed — map uses percentage-based positioning
 
 	// 3. Server Communication
     // Helper function handles sending changes to the database.
@@ -272,23 +272,23 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 	// 9. Component UI
     // Render builds visual sections for Admin Panel.
 	return (
-		<div className="max-w-7xl mx-auto p-6 space-y-6 text-[#FF7A00]">
+		<div className="max-w-7xl mx-auto p-3 md:p-6 space-y-6 text-[#FF7A00]">
 			<h1 className="text-2xl font-semibold">Admin Panel</h1>
 
 			{/* LOCATIONS */}
 			{/* New location: */}
-			<section className="bg-white rounded shadow p-4">
-				<div className="flex items-center justify-between mb-4">
+			<section className="bg-white rounded shadow p-3 md:p-4 overflow-x-auto">
+				<div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
 					<h2 className="text-lg font-medium">Locations</h2>
-					<div className="flex gap-2 items-center">
+					<div className="flex flex-wrap gap-2 items-center">
 						<input
-							className="px-2 py-1 border rounded w-48"
+							className="px-2 py-1 border rounded w-full md:w-48"
 							placeholder="Name"
 							value={newLoc.name}
 							onChange={e => setNewLoc(n => ({ ...n, name: e.target.value }))}
 						/>
 						<input
-							className="px-2 py-1 border rounded w-32"
+							className="px-2 py-1 border rounded w-full md:w-32"
 							placeholder="Type"
 							value={newLoc.type}
 							onChange={e => setNewLoc(n => ({ ...n, type: e.target.value }))}
@@ -306,7 +306,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							onChange={e => setNewLoc(n => ({ ...n, y_coordinate: Number(e.target.value) }))}
 						/>
 						<button
-							className="ml-2 bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer"
+							className="bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer"
 							onClick={addLocation}
 							disabled={locSaving}
 						>
@@ -317,35 +317,35 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 				{/* Existing locations: */}
 				<div className="space-y-2">
 					{locations.map(loc => (
-						<div key={loc.location_id} className="flex items-center gap-2">
+						<div key={loc.location_id} className="flex flex-wrap items-center gap-2">
 							<input
-								className="px-2 py-1 border rounded w-80"
+								className="px-2 py-1 border rounded w-full md:w-80"
 								value={loc.name}
 								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, name: e.target.value } : l)))}
 								onBlur={e => updateLocation(loc.location_id, { name: e.target.value })}
 							/>
 							<input
-								className="px-2 py-1 border rounded w-28"
+								className="px-2 py-1 border rounded w-24 md:w-28"
 								value={loc.type ?? ""}
 								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, type: e.target.value } : l)))}
 								onBlur={e => updateLocation(loc.location_id, { type: e.target.value })}
 							/>
 							<input
 								type="number"
-								className="px-2 py-1 border rounded w-24"
+								className="px-2 py-1 border rounded w-20"
 								value={loc.x_coordinate ?? 0}
 								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, x_coordinate: Number(e.target.value) } : l)))}
 								onBlur={e => updateLocation(loc.location_id, { x_coordinate: Number(e.target.value) })}
 							/>
 							<input
 								type="number"
-								className="px-2 py-1 border rounded w-24"
+								className="px-2 py-1 border rounded w-20"
 								value={loc.y_coordinate ?? 0}
 								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, y_coordinate: Number(e.target.value) } : l)))}
 								onBlur={e => updateLocation(loc.location_id, { y_coordinate: Number(e.target.value) })}
 							/>
 							<button
-								className="ml-2 text-red-600 px-2 py-1 rounded border cursor-pointer"
+								className="text-red-600 px-2 py-1 rounded border cursor-pointer"
 								onClick={() => deleteLocation(loc.location_id)}
 								disabled={locSaving}
 								title="Delete location"
@@ -359,13 +359,13 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 
 			{/* QUESTS */}
 			{/* New quest: */}
-			<section className="bg-white rounded shadow p-4">
-				<div className="flex items-center justify-between mb-4">
+			<section className="bg-white rounded shadow p-3 md:p-4 overflow-x-auto">
+				<div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
 					<h2 className="text-lg font-medium">Quests</h2>
 					<div className="flex flex-col gap-2">
-						<div className="flex items-center gap-2">
+						<div className="flex flex-wrap items-center gap-2">
 							<select
-								className="px-2 py-1 border rounded"
+								className="px-2 py-1 border rounded w-full md:w-auto"
 								value={newQuest.location_id ?? ""}
 								onChange={e => setNewQuest(q => ({ ...q, location_id: e.target.value }))}
 							>
@@ -377,13 +377,13 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								))}
 							</select>
 							<input
-								className="px-2 py-1 border rounded w-64"
+								className="px-2 py-1 border rounded w-full md:w-64"
 								placeholder="Quest text"
 								value={newQuest.text}
 								onChange={e => setNewQuest(q => ({ ...q, text: e.target.value }))}
 							/>
 						</div>
-						<div className="flex items-center gap-4">
+						<div className="flex flex-wrap items-center gap-2 md:gap-4">
 							<label className="flex items-center gap-1 text-sm text-gray-700 cursor-pointer">
 								<input
 									type="checkbox"
@@ -403,7 +403,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								/>
 							</label>
 							<button
-								className="ml-auto bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer"
+								className="md:ml-auto bg-[#FF7A00] text-white px-3 py-1 rounded disabled:opacity-60 cursor-pointer w-full md:w-auto"
 								onClick={addQuest}
 								disabled={questSaving}
 							>
@@ -415,9 +415,9 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 				{/* Existing quests: */}
 				<div className="space-y-2">
 					{questsSorted.map(q => (
-						<div key={q.quest_id} className="flex items-center gap-2">
+						<div key={q.quest_id} className="flex flex-wrap items-center gap-2">
 							<select
-								className="px-2 py-1 border rounded w-44"
+								className="px-2 py-1 border rounded w-full md:w-44"
 								value={q.location_id ?? ""}
 								onChange={e => updateQuest(q.quest_id, { location_id: e.target.value })}
 							>
@@ -430,14 +430,14 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 							</select>
 
 							<input
-								className="px-2 py-1 border rounded flex-1"
+								className="px-2 py-1 border rounded w-full md:flex-1"
 								value={q.text}
 								onChange={e => setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, text: e.target.value } : x)))}
 								onBlur={e => updateQuest(q.quest_id, { text: e.target.value })}
 							/>
 
-							<div className="flex flex-col text-xs gap-1">
-								<label className="flex items-center gap-1  cursor-pointer">
+							<div className="flex items-center text-xs gap-2">
+								<label className="flex items-center gap-1 cursor-pointer">
 									<input
 										type="checkbox"
 										checked={q.is_multiplayer || false}
@@ -460,28 +460,27 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 									}}
 									onBlur={e => updateQuest(q.quest_id, { reward_points: Number(e.target.value) })}
 								/>
+								<button
+									className="text-red-600 px-2 py-1 rounded border cursor-pointer"
+									onClick={() => deleteQuest(q.quest_id)}
+									disabled={questSaving}
+									title="Delete quest"
+								>
+									Delete
+								</button>
 							</div>
-
-							<button
-								className="ml-2 text-red-600 px-2 py-1 rounded border cursor-pointer"
-								onClick={() => deleteQuest(q.quest_id)}
-								disabled={questSaving}
-								title="Delete quest"
-							>
-								Delete
-							</button>
 						</div>
 					))}
 				</div>
 			</section>
 
 			{/* GEOTHINKR */}
-			<section className="bg-white rounded shadow p-4">
+			<section className="bg-white rounded shadow p-3 md:p-4">
 				<div className="flex items-center justify-between mb-4">
 					<h2 className="text-lg font-medium">GeoThinkr Photos</h2>
 				</div>
 
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
 					{/* Form Side */}
 					<div className="space-y-4">
 						<div className="space-y-2">
@@ -597,15 +596,16 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					<div>
 						<div className="text-sm font-medium mb-2">Internal Map (Click to set location)</div>
 						<div
-							className="relative border-4 border-gray-300 rounded cursor-crosshair overflow-hidden inline-block"
-							style={{ width: ADMIN_MAP_WIDTH, height: ADMIN_MAP_HEIGHT }}
+							className="relative border-4 border-gray-300 rounded cursor-crosshair overflow-hidden"
+							style={{ width: '100%', maxWidth: ADMIN_MAP_WIDTH, aspectRatio: `${MAP_WIDTH_ORIGINAL}/${MAP_HEIGHT_ORIGINAL}` }}
 							onClick={(e) => {
 								const rect = e.currentTarget.getBoundingClientRect();
 								const clickX = e.clientX - rect.left;
 								const clickY = e.clientY - rect.top;
-								// Convert to original scale
-								const originalX = clickX / scale;
-								const originalY = clickY / scale;
+								// Convert to original scale using actual rendered size
+								const currentScale = rect.width / MAP_WIDTH_ORIGINAL;
+								const originalX = clickX / currentScale;
+								const originalY = clickY / currentScale;
 								setNewGeoPhoto(p => ({ ...p, x: originalX, y: originalY }));
 							}}
 						>
@@ -619,19 +619,19 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 								<div
 									className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
 									style={{
-										left: newGeoPhoto.x * scale,
-										top: newGeoPhoto.y * scale
+										left: `${(newGeoPhoto.x / MAP_WIDTH_ORIGINAL) * 100}%`,
+										top: `${(newGeoPhoto.y / MAP_HEIGHT_ORIGINAL) * 100}%`
 									}}
 								/>
 							)}
-							{/* Show existing markers faintly? */}
+							{/* Show existing markers faintly */}
 							{geoPhotos.map(p => (
 								<div
 									key={p.photo_id}
 									className="absolute w-2 h-2 bg-blue-500/50 rounded-full pointer-events-none"
 									style={{
-										left: p.x_coordinate * scale,
-										top: p.y_coordinate * scale
+										left: `${(p.x_coordinate / MAP_WIDTH_ORIGINAL) * 100}%`,
+										top: `${(p.y_coordinate / MAP_HEIGHT_ORIGINAL) * 100}%`
 									}}
 								/>
 							))}
@@ -641,13 +641,13 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			</section>
 
 			{/* MANUAL POINTS */}
-			<section className="bg-white rounded shadow p-4">
+			<section className="bg-white rounded shadow p-3 md:p-4">
 				<h2 className="text-lg font-medium mb-4">Award Points Manually</h2>
-				<div className="flex items-end gap-4">
+				<div className="flex flex-col md:flex-row md:items-end gap-3 md:gap-4">
 					<div className="space-y-1">
 						<label className="text-sm font-medium">User Email</label>
 						<input
-							className="block border rounded px-3 py-2 w-64"
+							className="block border rounded px-3 py-2 w-full md:w-64"
 							placeholder="user@ku.edu"
 							value={manualPoints.email}
 							onChange={e => setManualPoints(p => ({ ...p, email: e.target.value }))}
@@ -657,7 +657,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 						<label className="text-sm font-medium">Amount</label>
 						<input
 							type="number"
-							className="block border rounded px-3 py-2 w-32"
+							className="block border rounded px-3 py-2 w-full md:w-32"
 							value={manualPoints.amount}
 							onChange={e => setManualPoints(p => ({ ...p, amount: parseInt(e.target.value) }))}
 						/>
@@ -665,7 +665,7 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					<button
 						onClick={awardPoints}
 						disabled={pointsSaving}
-						className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 disabled:opacity-50 cursor-pointer"
+						className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 disabled:opacity-50 cursor-pointer w-full md:w-auto"
 					>
 						{pointsSaving ? "Sending..." : "Award Points"}
 					</button>

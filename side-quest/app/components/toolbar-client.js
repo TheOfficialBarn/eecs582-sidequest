@@ -3,7 +3,8 @@
 	Description: Renders the client-side toolbar with navigation, user info, and notifications.
 	Programmers: Alejandro Sandoval, Pashia Vang
 	Date: 10/25/2025
-	Revisions: Add notifications - 11/06/2025, Add conditional admin page - 11/23/2025
+	Revisions: Add notifications - 11/06/2025, Add conditional admin page - 11/23/2025,
+		Fix navbar width and overflow at mid-range viewports - 03/29/2026
 	Errors: N/A
 	Input: User object (name, email) from parent component
 	Output: Navigation toolbar with links, login/logout buttons, and notifications
@@ -39,7 +40,7 @@ export default function ToolbarClient({ user }) {
 			}
 		}
 		function onResize() {
-			if (window.innerWidth >= 768) setMobileOpen(false);
+			if (window.innerWidth >= 1024) setMobileOpen(false);
 		}
 		// use resize listeners to enable the hamburger on the fly
 		document.addEventListener("click", onDocClick);
@@ -66,7 +67,7 @@ export default function ToolbarClient({ user }) {
 	}, [user?.points]);
 
 	return (
-		<nav className="sticky top-0 z-50 flex items-center justify-between bg-gradient-to-r from-[#00AEEF] to-[#0096D6] text-white px-4 md:px-8 py-3 shadow-lg">
+		<nav className="sticky top-0 z-50 w-full flex items-center justify-between bg-gradient-to-r from-[#00AEEF] to-[#0096D6] text-white px-4 md:px-8 py-3 shadow-lg">
 			<Link href="/" className="flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">
 				<div className="relative">
 					<Map className="w-7 h-7 text-[#FFDA00] drop-shadow-lg group-hover:rotate-[-12deg] transition-transform duration-300" />
@@ -77,17 +78,17 @@ export default function ToolbarClient({ user }) {
 				</span>
 			</Link>
 
-			{/* Navigation Links - Always visible on large screens */}
-			<div className="hidden md:flex items-center gap-1 xl:gap-6 text-sm lg:text-lg font-semibold">
-				<Link href="/map" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Map className="w-5 h-5" /> Map</Link>
-				<Link href="/quests" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Compass className="w-5 h-5" /> Quests</Link>
-				<Link href="/leaderboard" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Trophy className="w-5 h-5" /> Leaderboard</Link>
-				<Link href="/shop" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <ShoppingBag className="w-5 h-5" /> Shop</Link>
-				<Link href="/multiplayer" className="group flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Swords className="w-5 h-5" /> Multiplayer</Link>
-				<Link href="/geothinkr" className="hidden xl:flex group items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Lightbulb className="w-5 h-5" /> GeoThinkr</Link>
+			{/* Navigation Links - visible on lg screens and above */}
+			<div className="hidden lg:flex items-center gap-0.5 xl:gap-2 text-sm xl:text-base font-semibold flex-shrink min-w-0">
+				<Link href="/map" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Map className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Map</Link>
+				<Link href="/quests" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Compass className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Quests</Link>
+				<Link href="/leaderboard" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Trophy className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">Leaderboard</span><span className="xl:hidden">Board</span></Link>
+				<Link href="/shop" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <ShoppingBag className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Shop</Link>
+				<Link href="/multiplayer" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Swords className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">Multiplayer</span><span className="xl:hidden">Multi</span></Link>
+				<Link href="/geothinkr" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Lightbulb className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">GeoThinkr</span><span className="xl:hidden">Geo</span></Link>
 				{/* Admin tab is only visible if user is admin*/}
 				{user?.is_admin && (
-					<Link href="/admin" className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200"> <Brain className="w-5 h-5" /> Admin </Link>
+					<Link href="/admin" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Brain className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Admin</Link>
 				)}
 			</div>
 
@@ -97,7 +98,7 @@ export default function ToolbarClient({ user }) {
 
 				{/* Mobile menu button */}
 				<button
-					className="md:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
+					className="lg:hidden p-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
 					aria-label="Toggle menu"
 					onClick={() => setMobileOpen(v => !v)}
 				>
@@ -129,7 +130,7 @@ export default function ToolbarClient({ user }) {
 
 			{/* Mobile panel */}
 			{mobileOpen && (
-				<div ref={panelRef} className="md:hidden absolute top-full left-0 right-0 bg-white text-[#0b3b4a] shadow-lg py-3 z-50">
+				<div ref={panelRef} className="lg:hidden absolute top-full left-0 right-0 bg-white text-[#0b3b4a] shadow-lg py-3 z-50">
 					<div className="flex flex-col px-4 gap-2">
 						<Link href="/map" className="px-3 py-2 rounded-md hover:bg-gray-100">Map</Link>
 						<Link href="/quests" className="px-3 py-2 rounded-md hover:bg-gray-100">Quests</Link>
