@@ -7,7 +7,8 @@
 	Revisions: Added difficulty picker, hints, zoom, leaderboard link - 2/19/2026,
 	           Added timer, multi-round game, and end-game summary - 2/19/2026,
 	           Added speed bonus for timed mode - 03/29/2026,
-	           Added share score feature - 03/29/2026
+	           Added share score feature - 03/29/2026,
+	           Made game interface responsive for mobile - 03/29/2026
 	Errors: N/A
 	Input:
 		- User auth token (cookie)
@@ -279,7 +280,8 @@ export default function GeoThinkrPage() {
 		const text = `I scored ${totalScore}/${maxPossible} on GeoThinkr (${difficulty?.toUpperCase()})! ${spotOns} spot-on${spotOns !== 1 ? 's' : ''} out of ${TOTAL_ROUNDS} rounds`;
 
 		if (navigator.share) {
-			await navigator.share({ text });
+			try { await navigator.share({ text }); } catch {}
+			return;
 		} else {
 			await navigator.clipboard.writeText(text);
 			setCopied(true);
@@ -346,7 +348,7 @@ export default function GeoThinkrPage() {
 					{/* Time Limit Selector */}
 					<div className="mb-6">
 						<p className="text-sm font-bold text-gray-600 mb-3 uppercase tracking-wider">Round Timer</p>
-						<div className="flex justify-center gap-2">
+						<div className="flex justify-center gap-1.5 md:gap-2 flex-wrap">
 							{[
 								{ value: null, label: "Unlimited" },
 								{ value: 30, label: "30s" },
@@ -356,7 +358,7 @@ export default function GeoThinkrPage() {
 								<button
 									key={opt.label}
 									onClick={() => setTimeLimit(opt.value)}
-									className={`px-4 py-2 rounded-full font-bold text-sm transition-all ${
+									className={`px-3 md:px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all ${
 										timeLimit === opt.value
 											? 'bg-[#FF7A00] text-white shadow-lg scale-105'
 											: 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#FF7A00] hover:text-[#FF7A00]'
@@ -501,43 +503,43 @@ export default function GeoThinkrPage() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center p-4">
 			{/* Header */}
-			<div className="w-full max-w-4xl flex items-center justify-between mb-6">
-				<div className="flex items-center gap-3">
-					<Lightbulb className="w-8 h-8 text-[#FF7A00]" />
-					<h1 className="text-2xl font-black text-[#FF7A00]">GeoThinkr</h1>
+			<div className="w-full max-w-4xl flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2">
+				<div className="flex items-center gap-2 md:gap-3">
+					<Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-[#FF7A00]" />
+					<h1 className="text-lg md:text-2xl font-black text-[#FF7A00]">GeoThinkr</h1>
 					<span className={`text-xs font-bold px-2 py-1 rounded-full ${
 						difficulty === 'easy' ? 'bg-[#00AEEF]/10 text-[#00AEEF]' :
 						difficulty === 'medium' ? 'bg-[#FF7A00]/10 text-[#FF7A00]' :
 						'bg-red-100 text-red-700'
 					}`}>{difficulty?.toUpperCase()}</span>
 				</div>
-				<div className="flex items-center gap-4">
+				<div className="flex items-center gap-2 md:gap-4">
 					{/* Round Counter */}
-					<span className="text-sm font-bold text-gray-600">
-						Round {currentRound} / {TOTAL_ROUNDS}
+					<span className="text-xs md:text-sm font-bold text-gray-600">
+						{currentRound}/{TOTAL_ROUNDS}
 					</span>
 
 					{/* Timer Display */}
 					{timeLimit !== null && gameState === 'playing' && timeRemaining !== null && (
-						<span className={`font-mono font-bold text-lg px-3 py-1 rounded-full ${
+						<span className={`font-mono font-bold text-sm md:text-lg px-2 md:px-3 py-1 rounded-full ${
 							timeRemaining <= 10
 								? 'bg-red-100 text-red-600 animate-pulse'
 								: 'bg-gray-100 text-gray-700'
 						}`}>
-							<Clock className="w-4 h-4 inline mr-1" />
+							<Clock className="w-3 h-3 md:w-4 md:h-4 inline mr-1" />
 							{timeRemaining}s
 						</span>
 					)}
 
-					<button onClick={handleNewGame} className="text-[#00AEEF] hover:text-[#0096D6] font-bold">Menu</button>
+					<button onClick={handleNewGame} className="text-[#00AEEF] hover:text-[#0096D6] font-bold text-sm md:text-base">Menu</button>
 				</div>
 			</div>
 
 			{/* Game Content */}
-			<div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 h-[80vh]">
+			<div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 md:h-[80vh]">
 
 				{/* Photo Side */}
-				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#FF7A00] overflow-hidden relative flex flex-col">
+				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#FF7A00] overflow-hidden relative flex flex-col min-h-[40vh] md:min-h-0">
 					<div className="flex-1 relative bg-black">
 						{photo && (
 							<img
@@ -549,7 +551,7 @@ export default function GeoThinkrPage() {
 
 						{/* Hint Buttons */}
 						{gameState === 'playing' && (
-							<div className="absolute bottom-4 left-4 right-4 flex gap-2">
+							<div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 right-2 md:right-4 flex gap-1 md:gap-2">
 								<button
 									onClick={() => { if (!hint1Revealed) { setHint1Revealed(true); setHintsUsed(h => h + 1); } }}
 									className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
@@ -581,12 +583,12 @@ export default function GeoThinkrPage() {
 
 						{/* Result Overlay on Photo */}
 						{result && (
-							<div className="absolute bottom-0 left-0 right-0 bg-black/80 p-6 text-white text-center animate-in slide-in-from-bottom duration-500">
-								<h2 className="text-3xl font-black text-[#FFDA00] mb-2">{result.tier}</h2>
-								<p className="text-lg opacity-90 mb-1">
+							<div className="absolute bottom-0 left-0 right-0 bg-black/80 p-3 md:p-6 text-white text-center animate-in slide-in-from-bottom duration-500">
+								<h2 className="text-xl md:text-3xl font-black text-[#FFDA00] mb-1 md:mb-2">{result.tier}</h2>
+								<p className="text-sm md:text-lg opacity-90 mb-1">
 									You were <strong>{Math.round(result.distance)}px</strong> away.
 								</p>
-								<p className="text-sm opacity-75 mb-1">Correct Location: {result.location_name}</p>
+								<p className="text-xs md:text-sm opacity-75 mb-1">Correct Location: {result.location_name}</p>
 								{result.category && (
 									<p className="text-xs opacity-60 mb-4">Category: {result.category}</p>
 								)}
@@ -600,7 +602,7 @@ export default function GeoThinkrPage() {
 
 								<div className="flex items-center justify-center gap-4">
 									<div className="text-center">
-										<div className="text-4xl font-bold text-green-400">+{result.points}</div>
+										<div className="text-2xl md:text-4xl font-bold text-green-400">+{result.points}</div>
 										<div className="text-xs font-bold uppercase tracking-wider">Points Earned</div>
 									</div>
 								</div>
@@ -617,7 +619,7 @@ export default function GeoThinkrPage() {
 
 								<button
 									onClick={handleNextRound}
-									className="mt-6 bg-[#FF7A00] text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-[#FF9500] hover:scale-105 transition-all shadow-lg flex items-center gap-2 mx-auto"
+									className="mt-3 md:mt-6 bg-[#FF7A00] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-bold text-sm md:text-lg hover:bg-[#FF9500] hover:scale-105 transition-all shadow-lg flex items-center gap-2 mx-auto"
 								>
 									<RefreshCw className="w-5 h-5" />
 									{currentRound >= TOTAL_ROUNDS ? "See Results" : `Next Round (${currentRound}/${TOTAL_ROUNDS})`}
