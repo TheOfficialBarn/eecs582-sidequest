@@ -2,7 +2,7 @@
 	Name: GeoThinkr Game API endpoint
 	Description: Serves random unplayed photos and processes user guesses with scoring,
 	             hints deduction, difficulty-based thresholds, and achievement checks.
-	Programmers: Liam Aga
+	Programmers: Pashia Vang, Liam Aga
 	Date: 2/15/2025
 	Revisions: Integrated scoring + history tracking - 11/06/2025,
 	           Added difficulty filter, hints, verified filter, achievements - 2/19/2026,
@@ -172,16 +172,19 @@ export async function GET(req) {
 	if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
 	const unplayedPhotos = photos.filter(p => !playedIds.has(p.photo_id));
+	let photoPool = unplayedPhotos;
 
 	if (!unplayedPhotos || unplayedPhotos.length === 0) {
-		return NextResponse.json({ error: "No photos available" }, { status: 404 });
+		//return NextResponse.json({ error: "No photos available" }, { status: 404 });
+		// Just clear history and allow replaying
+		photoPool = photos;
 	}
 
 	// Exclude photos already seen in the current multi-round session
 	const excludeParam = new URL(req.url).searchParams.get("exclude");
 	const excludeIds = excludeParam ? new Set(excludeParam.split(",")) : new Set();
-	let candidates = unplayedPhotos.filter(p => !excludeIds.has(String(p.photo_id)));
-	if (candidates.length === 0) candidates = unplayedPhotos;
+	let candidates = photoPool.filter(p => !excludeIds.has(String(p.photo_id)));
+	if (candidates.length === 0) candidates = photoPool;
 
 	const randomPhoto = candidates[Math.floor(Math.random() * candidates.length)];
 	return NextResponse.json(randomPhoto);
@@ -208,16 +211,17 @@ export async function POST(req) {
 	const supabase = createAdminClient();
 
 	// Check if already played (prevent double submission)
-	const { data: existing } = await supabase
-		.from("geothinkr_history")
-		.select("history_id")
-		.eq("user_id", user.id)
-		.eq("photo_id", photo_id)
-		.single();
+	// EDIT: We are allowing this now
+	// const { data: existing } = await supabase
+	// 	.from("geothinkr_history")
+	// 	.select("history_id")
+	// 	.eq("user_id", user.id)
+	// 	.eq("photo_id", photo_id)
+	// 	.single();
 
-	if (existing) {
-		return NextResponse.json({ error: "Already played" }, { status: 409 });
-	}
+	// if (existing) {
+	// 	return NextResponse.json({ error: "Already played" }, { status: 409 });
+	// }
 
 	// Fetch the target photo to get real coords
 	const { data: photo, error } = await supabase
