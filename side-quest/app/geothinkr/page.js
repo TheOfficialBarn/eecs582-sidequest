@@ -52,6 +52,13 @@ export default function GeoThinkrPage() {
 	const [timeLimit, setTimeLimit] = useState(null); // null=unlimited, 30, 60, or 90
 	const [timeRemaining, setTimeRemaining] = useState(null);
 
+	// Map zoom and pan state
+	const [mapZoom, setMapZoom] = useState(1);
+	const [mapPanX, setMapPanX] = useState(0);
+	const [mapPanY, setMapPanY] = useState(0);
+	const [isDragging, setIsDragging] = useState(false);
+	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
 	// Refs for stale closure avoidance in timer callback
 	const guessRef = useRef(null);
 	const photoRef = useRef(null);
@@ -61,6 +68,10 @@ export default function GeoThinkrPage() {
 	const timeRemainingRef = useRef(null);
 	const mapContainerRef = useRef(null);
 	const submitGuessRef = useRef(null);
+	const mapZoomRef = useRef(1);
+	const mapPanXRef = useRef(0);
+	const mapPanYRef = useRef(0);
+	const isDraggingRef = useRef(false);
 
 	const MAP_WIDTH_ORIGINAL = 1669;
 	const MAP_HEIGHT_ORIGINAL = 1535;
@@ -72,6 +83,10 @@ export default function GeoThinkrPage() {
 	useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
 	useEffect(() => { timeLimitRef.current = timeLimit; }, [timeLimit]);
 	useEffect(() => { timeRemainingRef.current = timeRemaining; }, [timeRemaining]);
+	useEffect(() => { mapZoomRef.current = mapZoom; }, [mapZoom]);
+	useEffect(() => { mapPanXRef.current = mapPanX; }, [mapPanX]);
+	useEffect(() => { mapPanYRef.current = mapPanY; }, [mapPanY]);
+	useEffect(() => { isDraggingRef.current = isDragging; }, [isDragging]);
 
 	/*
 		Function: getMapZoom
@@ -80,12 +95,14 @@ export default function GeoThinkrPage() {
 		Returns: { scale, description }
 	*/
 	function getMapZoom(diff) {
-		switch (diff) {
-			case "easy": return { scale: 2.5, description: "Zoomed into a campus section" };
-			case "medium": return { scale: 1.5, description: "Half campus view" };
-			case "hard": return { scale: 1, description: "Full campus map" };
-			default: return { scale: 1, description: "Full campus map" };
-		}
+		// switch (diff) {
+		// 	case "easy": return { scale: 2.5, description: "Zoomed into a campus section" };
+		// 	case "medium": return { scale: 1.5, description: "Half campus view" };
+		// 	case "hard": return { scale: 1, description: "Full campus map" };
+		// 	default: return { scale: 1, description: "Full campus map" };
+		// }
+		// Zooming made it too difficult so just full map
+		return { scale: 1, description: "Full campus map" };
 	}
 
 	/*
@@ -101,6 +118,9 @@ export default function GeoThinkrPage() {
 		setHintsUsed(0);
 		setHint1Revealed(false);
 		setHint2Revealed(false);
+		setMapZoom(1);
+		setMapPanX(0);
+		setMapPanY(0);
 		try {
 			let url = "/api/geothinkr/game";
 			if (excludeIds.length > 0) {
@@ -195,6 +215,10 @@ export default function GeoThinkrPage() {
 			};
 
 			setResult(resultData);
+			// Reset zoom levels so you can see all pins
+			setMapZoom(1);
+			setMapPanX(0);
+			setMapPanY(0);
 
 			// Record round result
 			setRoundResults(prev => [...prev, {
@@ -218,6 +242,78 @@ export default function GeoThinkrPage() {
 	// Keep submitGuess ref in sync
 	submitGuessRef.current = submitGuess;
 
+	const handleMapWheel = useCallback((e) => {
+		// Check if panning is allowed
+		if (gameState !== 'playing') return;
+		e.preventDefault();
+		const zoomStep = 0.1;
+		const minZoom = 1;
+		const maxZoom = 3;
+		// Decide if zooming in or out
+		const direction = e.deltaY > 0 ? 1 : -1;
+		const oldZoom = mapZoomRef.current
+		const newZoom = Math.max(minZoom, Math.min(maxZoom, mapZoomRef.current + zoomStep*direction));
+		setMapZoom(newZoom);
+	}, [gameState]);
+
+	const handleMapDragStart = useCallback((e) => {
+		if (gameState !== 'playing') return;
+		// Move with right mouse button
+		if (e.button === 2) {
+			e.preventDefault();
+			setIsDragging(true);
+			setDragStart({ x: e.clientX - mapPanXRef.current, y: e.clientY - mapPanYRef.current });
+		}
+	}, [gameState]);
+
+	const handleMapDragMove = useCallback((e) => {
+		if (!isDraggingRef.current) return;
+
+		const containerEl = mapContainerRef.current;
+		if (!containerEl) return;
+
+		const rect = containerEl.getBoundingClientRect();
+		const containerWidth = rect.width;
+		const containerHeight = rect.height;
+		const scaledMapWidth = MAP_WIDTH_ORIGINAL * mapZoomRef.current;
+		const scaledMapHeight = MAP_HEIGHT_ORIGINAL * mapZoomRef.current;
+		const maxPanX = Math.max(0, (scaledMapWidth - containerWidth) / 2);
+		const maxPanY = Math.max(0, (scaledMapHeight - containerHeight) / 2);
+
+		// get new pan position
+		let newPanX = e.clientX - dragStart.x;
+		let newPanY = e.clientY - dragStart.y;
+		newPanX = Math.max(-maxPanX, Math.min(maxPanX, newPanX));
+		newPanY = Math.max(-maxPanY, Math.min(maxPanY, newPanY));
+
+		setMapPanX(newPanX);
+		setMapPanY(newPanY);
+	}, [dragStart]);
+
+	const handleMapDragEnd = useCallback((e) => {
+		// Move with right mouse button
+		if (e.button == 2) {
+			setIsDragging(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		// Listen to mouse dragging events
+		const container = mapContainerRef.current;
+		if (!container) return;
+
+		container.addEventListener('wheel', handleMapWheel, { passive: false });
+		container.addEventListener('mousedown', handleMapDragStart);
+		document.addEventListener('mousemove', handleMapDragMove);
+		document.addEventListener('mouseup', handleMapDragEnd);
+		return () => {
+			container.removeEventListener('wheel', handleMapWheel);
+			container.removeEventListener('mousedown', handleMapDragStart);
+			document.removeEventListener('mousemove', handleMapDragMove);
+			document.removeEventListener('mouseup', handleMapDragEnd);
+		};
+	}, [handleMapWheel, handleMapDragStart, handleMapDragMove, handleMapDragEnd]);
+
 	/*
 		Function: handleMapClick
 		Description: Processes the user's click on the map, submits guess to API.
@@ -225,21 +321,25 @@ export default function GeoThinkrPage() {
 		Returns: void (updates state with result)
 	*/
 	async function handleMapClick(e) {
-		if (gameState !== 'playing' || !photo) return;
+		if (gameState !== 'playing' || !photo || isDraggingRef.current) return;
 
 		const rect = e.currentTarget.getBoundingClientRect();
 		const clickX = e.clientX - rect.left;
 		const clickY = e.clientY - rect.top;
 
+		// Adjust for zoom and pan
+		const adjustedClickX = (clickX - mapPanXRef.current) / mapZoomRef.current;
+		const adjustedClickY = (clickY - mapPanYRef.current) / mapZoomRef.current;
+
 		const scaleX = rect.width / MAP_WIDTH_ORIGINAL;
 		const scaleY = rect.height / MAP_HEIGHT_ORIGINAL;
 
-		const originalX = clickX / scaleX;
-		const originalY = clickY / scaleY;
+		const originalX = adjustedClickX / scaleX;
+		const originalY = adjustedClickY / scaleY;
 
 		setGuess({ x: clickX, y: clickY, originalX, originalY, mapWidth: rect.width, mapHeight: rect.height });
 
-		await submitGuess(originalX, originalY, clickX, clickY);
+		await submitGuess(originalX, originalY, adjustedClickX, adjustedClickY);
 	}
 
 	/*
@@ -299,6 +399,9 @@ export default function GeoThinkrPage() {
 		setResult(null);
 		setGuess(null);
 		setPhoto(null);
+		setMapZoom(1);
+		setMapPanX(0);
+		setMapPanY(0);
 		setGameState('menu');
 	}
 
@@ -382,21 +485,21 @@ export default function GeoThinkrPage() {
 							className="w-full bg-white border-4 border-[#00AEEF] text-[#00AEEF] rounded-2xl p-6 shadow-[6px_6px_0_#FF7A00] hover:shadow-[8px_8px_0_#FF7A00] hover:scale-[1.02] transition-all"
 						>
 							<div className="text-2xl font-bold">Easy</div>
-							<div className="text-sm text-gray-600">Zoomed map view · Wider scoring radius</div>
+							<div className="text-sm text-gray-600">Wider scoring radius</div>
 						</button>
 						<button
 							onClick={() => startGame("medium")}
 							className="w-full bg-white border-4 border-[#FF7A00] text-[#FF7A00] rounded-2xl p-6 shadow-[6px_6px_0_#00AEEF] hover:shadow-[8px_8px_0_#00AEEF] hover:scale-[1.02] transition-all"
 						>
 							<div className="text-2xl font-bold">Medium</div>
-							<div className="text-sm text-gray-600">Half campus view · Standard scoring</div>
+							<div className="text-sm text-gray-600">Standard scoring</div>
 						</button>
 						<button
 							onClick={() => startGame("hard")}
 							className="w-full bg-white border-4 border-[#FFDA00] text-[#FF7A00] rounded-2xl p-6 shadow-[6px_6px_0_#FF7A00] hover:shadow-[8px_8px_0_#FF7A00] hover:scale-[1.02] transition-all"
 						>
 							<div className="text-2xl font-bold">Hard</div>
-							<div className="text-sm text-gray-600">Full map · Tight scoring radius</div>
+							<div className="text-sm text-gray-600">Tight scoring radius</div>
 						</button>
 					</div>
 				</div>
@@ -632,32 +735,39 @@ export default function GeoThinkrPage() {
 				{/* Map Side */}
 				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#00AEEF] p-2 relative overflow-hidden flex flex-col items-center justify-center">
 					<div
-						className="relative rounded-xl overflow-hidden border-4 border-gray-200 cursor-crosshair group shadow-inner"
+						className={`relative rounded-xl overflow-hidden border-4 border-gray-200 group shadow-inner ${
+							mapZoom > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-crosshair'
+						}`}
 						style={{ aspectRatio: '1669/1535', width: '100%', maxWidth: '600px' }}
 					>
 						<div
 							ref={(el) => { mapRef.current = el; mapContainerRef.current = el; }}
 							className="relative w-full h-full overflow-hidden"
 							onClick={handleMapClick}
-							style={zoom.scale > 1 ? {
-								overflow: 'hidden'
-							} : {}}
+							onContextMenu={(e) => e.preventDefault()}
 						>
 							<img
 								src="/map.png"
-								className="w-full h-full object-fill"
+								className="w-full h-full object-fill select-none"
 								alt="Game Map"
 								draggable={false}
-								style={zoom.scale > 1 ? {
-									transform: `scale(${zoom.scale})`,
-									transformOrigin: 'center center'
-								} : {}}
+								style={{
+									transform: `translate(${mapPanX}px, ${mapPanY}px) scale(${mapZoom})`,
+									transformOrigin: 'left top',
+								}}
 							/>
+
+							{/* Zoom level indicator */}
+							{mapZoom > 1 && (
+								<div className="absolute top-2 right-2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold pointer-events-none">
+									{`${Math.round(mapZoom * 100)}%`}
+								</div>
+							)}
 
 							{/* Hover effect prompt */}
 							{gameState === 'playing' && (
 								<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg font-bold text-gray-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
-									Click where you think this is!
+									{mapZoom > 1 ? 'Click to guess · Hold right click to pan' : 'Click where you think this is!'}
 								</div>
 							)}
 
@@ -667,10 +777,10 @@ export default function GeoThinkrPage() {
 									{/* Line connecting them */}
 									<svg className="absolute inset-0 pointer-events-none w-full h-full" style={{ zIndex: 10 }}>
 										<line
-											x1={result.displayGuessX}
-											y1={result.displayGuessY}
-											x2={result.displayCorrectX}
-											y2={result.displayCorrectY}
+											x1={result.displayGuessX * mapZoom + mapPanX}
+											y1={result.displayGuessY * mapZoom + mapPanY}
+											x2={result.displayCorrectX * mapZoom + mapPanX}
+											y2={result.displayCorrectY * mapZoom + mapPanY}
 											stroke="#FF7A00"
 											strokeWidth="3"
 											strokeDasharray="5,5"
@@ -680,7 +790,10 @@ export default function GeoThinkrPage() {
 									{/* User Guess */}
 									<div
 										className="absolute w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20"
-										style={{ left: result.displayGuessX, top: result.displayGuessY }}
+										style={{
+											left: result.displayGuessX * mapZoom + mapPanX,
+											top: result.displayGuessY * mapZoom + mapPanY
+										}}
 									>
 										<X className="w-4 h-4 text-white" />
 									</div>
@@ -688,7 +801,10 @@ export default function GeoThinkrPage() {
 									{/* Location */}
 									<div
 										className="absolute w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20 animate-bounce"
-										style={{ left: result.displayCorrectX, top: result.displayCorrectY }}
+										style={{
+											left: result.displayCorrectX * mapZoom + mapPanX,
+											top: result.displayCorrectY * mapZoom + mapPanY
+										}}
 									>
 										<Lightbulb className="w-5 h-5 text-white" />
 									</div>
