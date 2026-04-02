@@ -24,6 +24,10 @@ import { Trophy, Lightbulb, RefreshCw, X, HelpCircle, Eye, Clock, Share2, Check 
 
 const TOTAL_ROUNDS = 5;
 
+const DEFAULT_ZOOM = 1.5;
+const DEFAULT_PAN_X = -100;
+const DEFAULT_PAN_Y = -100;
+
 /*
 	Component: GeoThinkrPage
 	Description: Main GeoThinkr game with difficulty picker, zoom-based map,
@@ -53,9 +57,9 @@ export default function GeoThinkrPage() {
 	const [timeRemaining, setTimeRemaining] = useState(null);
 
 	// Map zoom and pan state
-	const [mapZoom, setMapZoom] = useState(1);
-	const [mapPanX, setMapPanX] = useState(0);
-	const [mapPanY, setMapPanY] = useState(0);
+	const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+	const [mapPanX, setMapPanX] = useState(DEFAULT_PAN_X);
+	const [mapPanY, setMapPanY] = useState(DEFAULT_PAN_Y);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
@@ -68,9 +72,9 @@ export default function GeoThinkrPage() {
 	const timeRemainingRef = useRef(null);
 	const mapContainerRef = useRef(null);
 	const submitGuessRef = useRef(null);
-	const mapZoomRef = useRef(1);
-	const mapPanXRef = useRef(0);
-	const mapPanYRef = useRef(0);
+	const mapZoomRef = useRef(DEFAULT_ZOOM);
+	const mapPanXRef = useRef(DEFAULT_PAN_X);
+	const mapPanYRef = useRef(DEFAULT_PAN_Y);
 	const isDraggingRef = useRef(false);
 
 	const MAP_WIDTH_ORIGINAL = 1669;
@@ -118,9 +122,9 @@ export default function GeoThinkrPage() {
 		setHintsUsed(0);
 		setHint1Revealed(false);
 		setHint2Revealed(false);
-		setMapZoom(1);
-		setMapPanX(0);
-		setMapPanY(0);
+		setMapZoom(DEFAULT_ZOOM);
+		setMapPanX(DEFAULT_PAN_X);
+		setMapPanY(DEFAULT_PAN_Y);
 		try {
 			let url = "/api/geothinkr/game";
 			if (excludeIds.length > 0) {
@@ -253,6 +257,25 @@ export default function GeoThinkrPage() {
 		const direction = e.deltaY > 0 ? 1 : -1;
 		const oldZoom = mapZoomRef.current
 		const newZoom = Math.max(minZoom, Math.min(maxZoom, mapZoomRef.current + zoomStep*direction));
+
+		// When zooming with center origin, adjust pan to keep center point centered
+		const containerEl = mapContainerRef.current;
+		if (containerEl && newZoom !== oldZoom) {
+			const rect = containerEl.getBoundingClientRect();
+			const containerWidth = rect.width;
+			const containerHeight = rect.height;
+			
+			// Calculate what map point is currently at the center of the viewport
+			const mapCenterX = (containerWidth / 2 - mapPanXRef.current) / oldZoom;
+			const mapCenterY = (containerHeight / 2 - mapPanYRef.current) / oldZoom;
+			
+			// After zooming, adjust pan so this same point remains at viewport center
+			const newPanX = containerWidth / 2 - mapCenterX * newZoom;
+			const newPanY = containerHeight / 2 - mapCenterY * newZoom;
+			
+			setMapPanX(newPanX);
+			setMapPanY(newPanY);
+		}
 		setMapZoom(newZoom);
 	}, [gameState]);
 
@@ -277,6 +300,7 @@ export default function GeoThinkrPage() {
 		const containerHeight = rect.height;
 		const scaledMapWidth = MAP_WIDTH_ORIGINAL * mapZoomRef.current;
 		const scaledMapHeight = MAP_HEIGHT_ORIGINAL * mapZoomRef.current;
+		// For center origin, pan limits are symmetric
 		const maxPanX = Math.max(0, (scaledMapWidth - containerWidth) / 2);
 		const maxPanY = Math.max(0, (scaledMapHeight - containerHeight) / 2);
 
@@ -738,7 +762,7 @@ export default function GeoThinkrPage() {
 						className={`relative rounded-xl overflow-hidden border-4 border-gray-200 group shadow-inner ${
 							mapZoom > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-crosshair'
 						}`}
-						style={{ aspectRatio: '1669/1535', width: '100%', maxWidth: '600px' }}
+						style={{ aspectRatio: `${MAP_WIDTH_ORIGINAL/MAP_HEIGHT_ORIGINAL}`, width: '100%', maxWidth: '600px' }}
 					>
 						<div
 							ref={(el) => { mapRef.current = el; mapContainerRef.current = el; }}
@@ -754,6 +778,7 @@ export default function GeoThinkrPage() {
 								style={{
 									transform: `translate(${mapPanX}px, ${mapPanY}px) scale(${mapZoom})`,
 									transformOrigin: 'left top',
+									transition: 'scale 0.15s ease-out',
 								}}
 							/>
 
