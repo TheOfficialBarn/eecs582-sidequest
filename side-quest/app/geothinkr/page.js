@@ -28,6 +28,15 @@ const DEFAULT_ZOOM = 1.5;
 const DEFAULT_PAN_X = -100;
 const DEFAULT_PAN_Y = -100;
 
+function getScoringThresholds(diff) {
+	switch (diff) {
+		case "easy": return { spotOnRadius: 100, closeRadius: 300 };
+		case "medium": return { spotOnRadius: 75, closeRadius: 200 };
+		case "hard": return { spotOnRadius: 50, closeRadius: 150 };
+		default: return { spotOnRadius: 100, closeRadius: 300 };
+	}
+}
+
 /*
 	Component: GeoThinkrPage
 	Description: Main GeoThinkr game with difficulty picker, zoom-based map,
@@ -62,6 +71,7 @@ export default function GeoThinkrPage() {
 	const [mapPanY, setMapPanY] = useState(DEFAULT_PAN_Y);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+	const [showAccuracyOverlay, setShowAccuracyOverlay] = useState(false);
 
 	// Refs for stale closure avoidance in timer callback
 	const guessRef = useRef(null);
@@ -118,6 +128,7 @@ export default function GeoThinkrPage() {
 	async function loadNewGame(excludeIds = []) {
 		setGameState('loading');
 		setResult(null);
+		setShowAccuracyOverlay(false);
 		setGuess(null);
 		setHintsUsed(0);
 		setHint1Revealed(false);
@@ -209,16 +220,22 @@ export default function GeoThinkrPage() {
 			const rect = mapContainer ? mapContainer.getBoundingClientRect() : null;
 			const scaleX = rect ? rect.width / MAP_WIDTH_ORIGINAL : 1;
 			const scaleY = rect ? rect.height / MAP_HEIGHT_ORIGINAL : 1;
+			const { spotOnRadius, closeRadius } = getScoringThresholds(difficultyRef.current || "easy");
 
 			const resultData = {
 				...data,
 				displayCorrectX: data.correct_x * scaleX,
 				displayCorrectY: data.correct_y * scaleY,
+				displaySpotOnRadiusX: spotOnRadius * scaleX,
+				displaySpotOnRadiusY: spotOnRadius * scaleY,
+				displayCloseRadiusX: closeRadius * scaleX,
+				displayCloseRadiusY: closeRadius * scaleY,
 				displayGuessX: displayX,
 				displayGuessY: displayY
 			};
 
 			setResult(resultData);
+			setShowAccuracyOverlay(false);
 			// Reset zoom levels so you can see all pins
 			setMapZoom(1);
 			setMapPanX(0);
@@ -417,6 +434,7 @@ export default function GeoThinkrPage() {
 		setCurrentRound(1);
 		setRoundResults([]);
 		setSessionPhotoIds([]);
+		setShowAccuracyOverlay(false);
 		setDifficulty(null);
 		setTimeLimit(null);
 		setTimeRemaining(null);
@@ -799,6 +817,43 @@ export default function GeoThinkrPage() {
 							{/* Result Visualization */}
 							{result && (
 								<>
+									{showAccuracyOverlay && (
+										<>
+											{/* Circles showing how close your guess needs to be */}
+											<svg className="absolute inset-0 pointer-events-none w-full h-full" style={{ zIndex: 8 }}>
+												<ellipse
+													cx={result.displayCorrectX * mapZoom + mapPanX}
+													cy={result.displayCorrectY * mapZoom + mapPanY}
+													rx={result.displayCloseRadiusX * mapZoom}
+													ry={result.displayCloseRadiusY * mapZoom}
+													fill="rgba(245, 158, 11, 0.18)"
+													stroke="rgba(217, 119, 6, 0.7)"
+													strokeWidth="2"
+												/>
+												<ellipse
+													cx={result.displayCorrectX * mapZoom + mapPanX}
+													cy={result.displayCorrectY * mapZoom + mapPanY}
+													rx={result.displaySpotOnRadiusX * mapZoom}
+													ry={result.displaySpotOnRadiusY * mapZoom}
+													fill="rgba(34, 197, 94, 0.26)"
+													stroke="rgba(22, 163, 74, 0.9)"
+													strokeWidth="2"
+												/>
+											</svg>
+
+											<div className="absolute left-2 bottom-2 z-20 bg-white/92 backdrop-blur rounded-lg border border-gray-200 px-2 py-1 text-[10px] md:text-xs font-semibold text-gray-700 pointer-events-none">
+												<div className="flex items-center gap-2">
+													<span className="inline-block w-3 h-3 rounded-full bg-green-500/70 border border-green-700/70" />
+													<span>Correct</span>
+												</div>
+												<div className="flex items-center gap-2 mt-0.5">
+													<span className="inline-block w-3 h-3 rounded-full bg-amber-400/70 border border-amber-700/70" />
+													<span>Close</span>
+												</div>
+											</div>
+										</>
+									)}
+
 									{/* Line connecting them */}
 									<svg className="absolute inset-0 pointer-events-none w-full h-full" style={{ zIndex: 10 }}>
 										<line
@@ -814,7 +869,11 @@ export default function GeoThinkrPage() {
 
 									{/* User Guess */}
 									<div
-										className="absolute w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20"
+										className={`absolute w-6 h-6 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20 ${
+											result.tier === 'Spot-on!' ? 'bg-green-500' :
+											result.tier === 'Close enough' ? 'bg-amber-500' :
+											'bg-red-500'
+										}`}
 										style={{
 											left: result.displayGuessX * mapZoom + mapPanX,
 											top: result.displayGuessY * mapZoom + mapPanY
@@ -826,6 +885,8 @@ export default function GeoThinkrPage() {
 									{/* Location */}
 									<div
 										className="absolute w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 z-20 animate-bounce"
+										onMouseEnter={() => setShowAccuracyOverlay(true)}
+										onMouseLeave={() => setShowAccuracyOverlay(false)}
 										style={{
 											left: result.displayCorrectX * mapZoom + mapPanX,
 											top: result.displayCorrectY * mapZoom + mapPanY
