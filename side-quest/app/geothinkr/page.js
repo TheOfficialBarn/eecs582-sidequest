@@ -24,9 +24,9 @@ import { Trophy, Lightbulb, RefreshCw, X, HelpCircle, Eye, Clock, Share2, Check 
 
 const TOTAL_ROUNDS = 5;
 
-const DEFAULT_ZOOM = 1.5;
-const DEFAULT_PAN_X = -100;
-const DEFAULT_PAN_Y = -100;
+const DEFAULT_ZOOM = 2.3;
+const DEFAULT_PAN_X = -410;
+const DEFAULT_PAN_Y = -180;
 
 function getScoringThresholds(diff) {
 	switch (diff) {
