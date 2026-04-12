@@ -271,7 +271,7 @@ export default function GeoThinkrPage() {
 		const minZoom = 1;
 		const maxZoom = 3;
 		// Decide if zooming in or out
-		const direction = e.deltaY > 0 ? 1 : -1;
+		const direction = e.deltaY > 0 ? -1 : 1;
 		const oldZoom = mapZoomRef.current
 		const newZoom = Math.max(minZoom, Math.min(maxZoom, mapZoomRef.current + zoomStep*direction));
 
@@ -778,7 +778,7 @@ export default function GeoThinkrPage() {
 				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#00AEEF] p-2 relative overflow-hidden flex flex-col items-center justify-center">
 					<div
 						className={`relative rounded-xl overflow-hidden border-4 border-gray-200 group shadow-inner ${
-							mapZoom > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-crosshair'
+							isDragging ? 'cursor-grabbing' : 'cursor-crosshair'
 						}`}
 						style={{ aspectRatio: `${MAP_WIDTH_ORIGINAL/MAP_HEIGHT_ORIGINAL}`, width: '100%', maxWidth: '600px' }}
 					>
