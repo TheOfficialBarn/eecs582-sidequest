@@ -34,6 +34,8 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 	const [locSaving, setLocSaving] = useState(false);
 	const [questSaving, setQuestSaving] = useState(false);
 	const [pointsSaving, setPointsSaving] = useState(false);
+	const [showLocations, setShowLocations] = useState(false);
+	const [showQuests, setShowQuests] = useState(false);
 	const [manualPoints, setManualPoints] = useState({ email: "", amount: 100 });
 
 	// Empty forms ready for admin to fill out.
@@ -278,8 +280,29 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 			{/* LOCATIONS */}
 			{/* New location: */}
 			<section className="bg-white rounded shadow p-3 md:p-4 overflow-x-auto">
-				<div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-					<h2 className="text-lg font-medium">Locations</h2>
+				<div className="mb-4">
+					<div className="flex items-center justify-between gap-2 mb-2">
+						<h2 className="text-lg font-medium">Locations</h2>
+						<button
+							type="button"
+							className="w-9 h-9 rounded border border-[#FF7A00] text-[#FF7A00] bg-white cursor-pointer flex items-center justify-center"
+							onClick={() => setShowLocations(v => !v)}
+							aria-label={showLocations ? "Collapse locations" : "Expand locations"}
+							title={`${showLocations ? "Collapse" : "Expand"} locations (${locations.length})`}
+						>
+							<svg
+								className={`w-5 h-5 transition-transform ${showLocations ? "rotate-90" : "rotate-0"}`}
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M9 6l6 6-6 6" />
+							</svg>
+						</button>
+					</div>
 					<div className="flex flex-wrap gap-2 items-center">
 						<input
 							className="px-2 py-1 border rounded w-full md:w-48"
@@ -315,53 +338,76 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					</div>
 				</div>
 				{/* Existing locations: */}
-				<div className="space-y-2">
-					{locations.map(loc => (
-						<div key={loc.location_id} className="flex flex-wrap items-center gap-2">
-							<input
-								className="px-2 py-1 border rounded w-full md:w-80"
-								value={loc.name}
-								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, name: e.target.value } : l)))}
-								onBlur={e => updateLocation(loc.location_id, { name: e.target.value })}
-							/>
-							<input
-								className="px-2 py-1 border rounded w-24 md:w-28"
-								value={loc.type ?? ""}
-								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, type: e.target.value } : l)))}
-								onBlur={e => updateLocation(loc.location_id, { type: e.target.value })}
-							/>
-							<input
-								type="number"
-								className="px-2 py-1 border rounded w-20"
-								value={loc.x_coordinate ?? 0}
-								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, x_coordinate: Number(e.target.value) } : l)))}
-								onBlur={e => updateLocation(loc.location_id, { x_coordinate: Number(e.target.value) })}
-							/>
-							<input
-								type="number"
-								className="px-2 py-1 border rounded w-20"
-								value={loc.y_coordinate ?? 0}
-								onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, y_coordinate: Number(e.target.value) } : l)))}
-								onBlur={e => updateLocation(loc.location_id, { y_coordinate: Number(e.target.value) })}
-							/>
-							<button
-								className="text-red-600 px-2 py-1 rounded border cursor-pointer"
-								onClick={() => deleteLocation(loc.location_id)}
-								disabled={locSaving}
-								title="Delete location"
-							>
-								Delete
-							</button>
-						</div>
-					))}
-				</div>
+				{showLocations && (
+					<div className="space-y-2">
+						{locations.map(loc => (
+							<div key={loc.location_id} className="flex flex-wrap items-center gap-2">
+								<input
+									className="px-2 py-1 border rounded w-full md:w-80"
+									value={loc.name}
+									onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, name: e.target.value } : l)))}
+									onBlur={e => updateLocation(loc.location_id, { name: e.target.value })}
+								/>
+								<input
+									className="px-2 py-1 border rounded w-24 md:w-28"
+									value={loc.type ?? ""}
+									onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, type: e.target.value } : l)))}
+									onBlur={e => updateLocation(loc.location_id, { type: e.target.value })}
+								/>
+								<input
+									type="number"
+									className="px-2 py-1 border rounded w-20"
+									value={loc.x_coordinate ?? 0}
+									onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, x_coordinate: Number(e.target.value) } : l)))}
+									onBlur={e => updateLocation(loc.location_id, { x_coordinate: Number(e.target.value) })}
+								/>
+								<input
+									type="number"
+									className="px-2 py-1 border rounded w-20"
+									value={loc.y_coordinate ?? 0}
+									onChange={e => setLocations(s => s.map(l => (l.location_id === loc.location_id ? { ...l, y_coordinate: Number(e.target.value) } : l)))}
+									onBlur={e => updateLocation(loc.location_id, { y_coordinate: Number(e.target.value) })}
+								/>
+								<button
+									className="text-red-600 px-2 py-1 rounded border cursor-pointer"
+									onClick={() => deleteLocation(loc.location_id)}
+									disabled={locSaving}
+									title="Delete location"
+								>
+									Delete
+								</button>
+							</div>
+						))}
+					</div>
+				)}
 			</section>
 
 			{/* QUESTS */}
 			{/* New quest: */}
 			<section className="bg-white rounded shadow p-3 md:p-4 overflow-x-auto">
-				<div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-					<h2 className="text-lg font-medium">Quests</h2>
+				<div className="mb-4">
+					<div className="flex items-center justify-between gap-2 mb-2">
+						<h2 className="text-lg font-medium">Quests</h2>
+						<button
+							type="button"
+							className="w-9 h-9 rounded border border-[#FF7A00] text-[#FF7A00] bg-white cursor-pointer flex items-center justify-center"
+							onClick={() => setShowQuests(v => !v)}
+							aria-label={showQuests ? "Collapse quests" : "Expand quests"}
+							title={`${showQuests ? "Collapse" : "Expand"} quests (${questsSorted.length})`}
+						>
+							<svg
+								className={`w-5 h-5 transition-transform ${showQuests ? "rotate-90" : "rotate-0"}`}
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M9 6l6 6-6 6" />
+							</svg>
+						</button>
+					</div>
 					<div className="flex flex-col gap-2">
 						<div className="flex flex-wrap items-center gap-2">
 							<select
@@ -413,65 +459,67 @@ export default function AdminPanel({ initialLocations = [], initialQuests = [], 
 					</div>
 				</div>
 				{/* Existing quests: */}
-				<div className="space-y-2">
-					{questsSorted.map(q => (
-						<div key={q.quest_id} className="flex flex-wrap items-center gap-2">
-							<select
-								className="px-2 py-1 border rounded w-full md:w-44"
-								value={q.location_id ?? ""}
-								onChange={e => updateQuest(q.quest_id, { location_id: e.target.value })}
-							>
-								<option value="">Unassigned</option>
-								{locations.map(l => (
-									<option key={l.location_id} value={l.location_id}>
-										{l.name}
-									</option>
-								))}
-							</select>
-
-							<input
-								className="px-2 py-1 border rounded w-full md:flex-1"
-								value={q.text}
-								onChange={e => setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, text: e.target.value } : x)))}
-								onBlur={e => updateQuest(q.quest_id, { text: e.target.value })}
-							/>
-
-							<div className="flex items-center text-xs gap-2">
-								<label className="flex items-center gap-1 cursor-pointer">
-									<input
-										type="checkbox"
-										checked={q.is_multiplayer || false}
-										className="cursor-pointer"
-										onChange={e => {
-											const val = e.target.checked;
-											setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, is_multiplayer: val } : x)));
-											updateQuest(q.quest_id, { is_multiplayer: val });
-										}}
-									/>
-									Multi
-								</label>
-								<input
-									type="number"
-									className="w-16 border px-1 rounded"
-									value={q.reward_points || 100}
-									onChange={e => {
-										const val = Number(e.target.value);
-										setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, reward_points: val } : x)));
-									}}
-									onBlur={e => updateQuest(q.quest_id, { reward_points: Number(e.target.value) })}
-								/>
-								<button
-									className="text-red-600 px-2 py-1 rounded border cursor-pointer"
-									onClick={() => deleteQuest(q.quest_id)}
-									disabled={questSaving}
-									title="Delete quest"
+				{showQuests && (
+					<div className="space-y-2">
+						{questsSorted.map(q => (
+							<div key={q.quest_id} className="flex flex-wrap items-center gap-2">
+								<select
+									className="px-2 py-1 border rounded w-full md:w-44"
+									value={q.location_id ?? ""}
+									onChange={e => updateQuest(q.quest_id, { location_id: e.target.value })}
 								>
-									Delete
-								</button>
+									<option value="">Unassigned</option>
+									{locations.map(l => (
+										<option key={l.location_id} value={l.location_id}>
+											{l.name}
+										</option>
+									))}
+								</select>
+
+								<input
+									className="px-2 py-1 border rounded w-full md:flex-1"
+									value={q.text}
+									onChange={e => setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, text: e.target.value } : x)))}
+									onBlur={e => updateQuest(q.quest_id, { text: e.target.value })}
+								/>
+
+								<div className="flex items-center text-xs gap-2">
+									<label className="flex items-center gap-1 cursor-pointer">
+										<input
+											type="checkbox"
+											checked={q.is_multiplayer || false}
+											className="cursor-pointer"
+											onChange={e => {
+												const val = e.target.checked;
+												setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, is_multiplayer: val } : x)));
+												updateQuest(q.quest_id, { is_multiplayer: val });
+											}}
+										/>
+										Multi
+									</label>
+									<input
+										type="number"
+										className="w-16 border px-1 rounded"
+										value={q.reward_points || 100}
+										onChange={e => {
+											const val = Number(e.target.value);
+											setQuests(s => s.map(x => (x.quest_id === q.quest_id ? { ...x, reward_points: val } : x)));
+										}}
+										onBlur={e => updateQuest(q.quest_id, { reward_points: Number(e.target.value) })}
+									/>
+									<button
+										className="text-red-600 px-2 py-1 rounded border cursor-pointer"
+										onClick={() => deleteQuest(q.quest_id)}
+										disabled={questSaving}
+										title="Delete quest"
+									>
+										Delete
+									</button>
+								</div>
 							</div>
-						</div>
-					))}
-				</div>
+						))}
+					</div>
+				)}
 			</section>
 
 			{/* GEOTHINKR */}
