@@ -29,69 +29,44 @@ import { Sparkles } from "lucide-react";
 		shadowColor - The shadow color (not used but kept for consistency)
 */
 export default function AnimatedProgressBar({ percentage, color, shadowColor }) {
-	const [animatedPercentage, setAnimatedPercentage] = useState(0);
-	const [hasAnimated, setHasAnimated] = useState(false);
+	const [visible, setVisible] = useState(false);
 	const progressRef = useRef(null);
 
 	useEffect(() => {
-		if (hasAnimated) return; // Only animate once
+		const node = progressRef.current;
+		if (!node) return;
 
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
-					if (entry.isIntersecting && !hasAnimated) {
-						// Start animation when element comes into view
-						setHasAnimated(true);
-						
-						// Animate from 0 to target percentage
-						let current = 0;
-						const increment = percentage / 30; // 30 frames for smooth animation
-						const duration = 800; // 800ms total duration
-						const frameTime = duration / 30;
-
-						const interval = setInterval(() => {
-							current += increment;
-							if (current >= percentage) {
-								current = percentage;
-								clearInterval(interval);
-							}
-							setAnimatedPercentage(current);
-						}, frameTime);
+					if (entry.isIntersecting) {
+						setVisible(true);
+						observer.disconnect();
 					}
 				});
 			},
-			{
-				threshold: 0.2, // Trigger when 20% of the element is visible
-			}
+			{ threshold: 0.2 }
 		);
 
-		if (progressRef.current) {
-			observer.observe(progressRef.current);
-		}
-
-		return () => {
-			if (progressRef.current) {
-				observer.unobserve(progressRef.current);
-			}
-		};
-	}, [percentage, hasAnimated]);
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, []);
 
 	return (
-		<div 
+		<div
 			ref={progressRef}
 			className="mb-6 h-5 bg-gray-100 rounded-full overflow-hidden border-2 border-gray-200"
 		>
-			{/* Progress fill based on animatedPercentage */}
-			<div 
-				className="h-full transition-all duration-700 rounded-full relative"
-				style={{ 
-					width: `${animatedPercentage}%`,
+			{/* CSS-driven width transition — one render, browser tweens on the compositor */}
+			<div
+				className="h-full rounded-full relative"
+				style={{
+					width: `${visible ? percentage : 0}%`,
 					backgroundColor: color,
-					transition: 'width 0.05s ease-out'
+					transition: 'width 800ms ease-out',
 				}}
 			>
-				{/* Sparkle when animation reaches 100% */}
-				{animatedPercentage === percentage && percentage === 100 && (
+				{visible && percentage === 100 && (
 					<div className="absolute inset-0 flex items-center justify-center">
 						<Sparkles className="w-4 h-4 text-white animate-pulse" />
 					</div>
