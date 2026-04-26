@@ -35,5 +35,41 @@ export const SHOP_AVATARS = [
 		name: 'Robot',
 		url: 'https://api.dicebear.com/9.x/bottts/svg?seed=Robot',
 		cost: 0
+	},
+	{
+		id: 'avatar_7',
+		name: 'Explorer',
+		url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=Explorer',
+		cost: 0
+	},
+	{
+		id: 'avatar_8',
+		name: 'Pixel Hero',
+		url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=PixelHero',
+		cost: 0
+	},
+	{
+		id: 'avatar_9',
+		name: 'Scholar',
+		url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=Scholar',
+		cost: 0
+	},
+	{
+		id: 'avatar_10',
+		name: 'Ranger',
+		url: 'https://api.dicebear.com/9.x/micah/svg?seed=Ranger',
+		cost: 0
+	},
+	{
+		id: 'avatar_11',
+		name: 'Cyborg',
+		url: 'https://api.dicebear.com/9.x/bottts/svg?seed=Cyborg',
+		cost: 0
+	},
+	{
+		id: 'avatar_12',
+		name: 'Mascot',
+		url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=Mascot',
+		cost: 0
 	}
 ];
