@@ -19,18 +19,31 @@ import LeaderboardTabs from "./LeaderboardTabs";
 export default async function LeaderboardsPage() {
 	const supabase = createAdminClient();
 
-	// --- Quest Leaderboard Data ---
-	const { data: rows, error: rowsErr } = await supabase
-		.from("progress")
-		.select("user_id")
-		.eq("completed", true);
+	// Quest progress and GeoThinkr history have no dependency on each other,
+	// so fetch them in parallel.
+	const [
+		{ data: rows, error: rowsErr },
+		{ data: geoHistory, error: geoErr },
+	] = await Promise.all([
+		supabase
+			.from("progress")
+			.select("user_id")
+			.eq("completed", true),
+		supabase
+			.from("geothinkr_history")
+			.select("user_id, points_awarded, created_at, users(name)"),
+	]);
 
 	if (rowsErr) {
 		console.error("Failed to load progress:", rowsErr);
 		return (
-			<div className="max-w-6xl mx-auto p-8">
-				<h2 className="text-3xl font-bold mb-4 text-[#FF7A00]">Leaderboard</h2>
-				<p className="text-red-600">Failed to load leaderboard data.</p>
+			<div className="flex-1 bg-gradient-to-br from-[#1a0d05] via-[#0a0e14] to-[#1a0d05]">
+				<div className="max-w-6xl mx-auto p-8">
+					<h2 className="text-3xl font-mono font-bold uppercase tracking-[0.15em] text-white mb-4">
+						Leaderboard
+					</h2>
+					<p className="font-mono text-red-400 uppercase tracking-wider">Failed to load leaderboard data.</p>
+				</div>
 			</div>
 		);
 	}
@@ -69,11 +82,6 @@ export default async function LeaderboardsPage() {
 		displayName: usersById[row.userId]?.name || row.userId,
 		completedCount: row.completedCount,
 	}));
-
-	// --- GeoThinkr Leaderboard Data ---
-	const { data: geoHistory, error: geoErr } = await supabase
-		.from("geothinkr_history")
-		.select("user_id, points_awarded, created_at, users(name)");
 
 	// Aggregate GeoThinkr history into leaderboard entries for a given time filter
 	function buildGeoLeaders(rows) {
@@ -114,9 +122,36 @@ export default async function LeaderboardsPage() {
 	}
 
 	return (
-		<div className="max-w-6xl mx-auto p-8">
-			<h2 className="text-3xl font-bold mb-6 text-[#FF7A00]">Leaderboard</h2>
-			<LeaderboardTabs questLeaders={questLeaders} geoAllTime={geoAllTime} geoWeekly={geoWeekly} geoDaily={geoDaily} />
+		<div className="relative flex-1 bg-gradient-to-br from-[#1a0d05] via-[#0a0e14] to-[#1a0d05] overflow-hidden">
+			{/* Ambient orange glow — anchors the warm side of the gradient */}
+			<div
+				className="absolute inset-0 pointer-events-none"
+				style={{
+					background:
+						"radial-gradient(ellipse at 15% 0%, rgba(255,122,0,0.18), transparent 55%), radial-gradient(ellipse at 85% 100%, rgba(0,174,239,0.10), transparent 55%)",
+				}}
+			/>
+			{/* Faint tactical grid overlay */}
+			<div
+				className="absolute inset-0 pointer-events-none opacity-[0.04]"
+				style={{
+					backgroundImage:
+						"linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+					backgroundSize: "44px 44px",
+				}}
+			/>
+
+			<div className="relative max-w-6xl mx-auto p-8">
+				<div className="mb-6">
+					<div className="font-mono text-[11px] uppercase tracking-[0.4em] text-[#FF7A00] mb-1">
+						{"// Global Standings"}
+					</div>
+					<h2 className="text-4xl font-mono font-bold uppercase tracking-[0.15em] text-white">
+						Leaderboard
+					</h2>
+				</div>
+				<LeaderboardTabs questLeaders={questLeaders} geoAllTime={geoAllTime} geoWeekly={geoWeekly} geoDaily={geoDaily} />
+			</div>
 		</div>
 	);
 }

@@ -29,7 +29,7 @@ export default async function Toolbar() {
 			// Get user information from db
 			const supabase = createAdminClient();
 			const userId = user.id;
-			let q = supabase.from("users").select("user_id, is_admin, name, email, points").limit(1);
+			let q = supabase.from("users").select("user_id, is_admin, name, email, points, profile_picture_url").limit(1);
 
 			q = q.eq("user_id", userId);
 
@@ -43,6 +43,7 @@ export default async function Toolbar() {
 					email: data.email ?? user.email,
 					is_admin: !!data.is_admin,
 					points: data.points || 0,
+					profile_picture_url: data.profile_picture_url || null,
 				};
 			} else {
 				// add default is_admin value

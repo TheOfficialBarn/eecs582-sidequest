@@ -28,6 +28,28 @@ const DEFAULT_ZOOM = 2.3;
 const DEFAULT_PAN_X = -410;
 const DEFAULT_PAN_Y = -180;
 
+// Notebook-dot grid + sticker shapes background, matching the rest of the app.
+function BackgroundPattern() {
+	return (
+		<div className="absolute inset-0 overflow-hidden pointer-events-none">
+			<div
+				className="absolute inset-0"
+				style={{
+					backgroundImage: 'radial-gradient(circle, rgba(255,122,0,0.18) 1.5px, transparent 1.5px)',
+					backgroundSize: '28px 28px',
+				}}
+			/>
+			<div className="absolute top-[8%] left-[6%] w-6 h-6 bg-[#FF7A00] rotate-12 shadow-[3px_3px_0_#FFDA00]" />
+			<div className="absolute top-[14%] right-[8%] w-8 h-8 bg-[#00AEEF] rounded-full shadow-[3px_3px_0_#FF7A00]" />
+			<div className="absolute top-[42%] left-[4%] w-5 h-5 bg-[#FFDA00] rotate-45 shadow-[3px_3px_0_#00AEEF]" />
+			<div className="absolute top-[50%] right-[5%] w-7 h-7 bg-[#FF7A00] rounded-full shadow-[3px_3px_0_#FFDA00]" />
+			<div className="absolute bottom-[18%] left-[14%] w-7 h-7 bg-[#00AEEF] rotate-45 shadow-[3px_3px_0_#FF7A00]" />
+			<div className="absolute bottom-[10%] right-[22%] w-6 h-6 bg-[#FFDA00] rotate-12 shadow-[3px_3px_0_#00AEEF]" />
+			<div className="absolute bottom-[28%] right-[40%] w-5 h-5 bg-[#FF7A00] rounded-full shadow-[3px_3px_0_#FFDA00]" />
+		</div>
+	);
+}
+
 function getScoringThresholds(diff) {
 	switch (diff) {
 		case "easy": return { spotOnRadius: 100, closeRadius: 300 };
@@ -484,16 +506,19 @@ export default function GeoThinkrPage() {
 	// Difficulty selection menu
 	if (gameState === 'menu') {
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center justify-center p-4">
-				<div className="max-w-lg w-full text-center">
-					<Lightbulb className="w-16 h-16 text-[#FF7A00] mx-auto mb-4" />
-					<h1 className="text-4xl font-black text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-2">GeoThinkr</h1>
-					<p className="text-[#00AEEF] mb-8">Guess where campus photos were taken on the map!</p>
+			<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center p-4 pt-8 relative overflow-hidden">
+				<BackgroundPattern />
+				<div className="max-w-lg w-full text-center relative z-10">
+					<div className="flex items-center justify-center gap-3 mb-2">
+						<Lightbulb className="w-10 h-10 text-[#FF7A00]" />
+						<h1 className="text-4xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00]">GeoThinkr</h1>
+					</div>
+					<p className="text-[#00AEEF] font-semibold mb-8">Guess where campus photos were taken on the map!</p>
 
 					{/* Time Limit Selector */}
-					<div className="mb-6">
-						<p className="text-sm font-bold text-gray-600 mb-3 uppercase tracking-wider">Round Timer</p>
-						<div className="flex justify-center gap-1.5 md:gap-2 flex-wrap">
+					<div className="mb-8">
+						<p className="text-sm font-bold text-[#FF7A00] mb-3 uppercase tracking-wider drop-shadow-[1px_1px_#FFDA00]">Round Timer</p>
+						<div className="flex justify-center gap-2 flex-wrap">
 							{[
 								{ value: null, label: "Unlimited" },
 								{ value: 30, label: "30s" },
@@ -503,10 +528,10 @@ export default function GeoThinkrPage() {
 								<button
 									key={opt.label}
 									onClick={() => setTimeLimit(opt.value)}
-									className={`px-3 md:px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all ${
+									className={`px-4 py-2 rounded-xl font-bold text-xs md:text-sm transition-all border-4 ${
 										timeLimit === opt.value
-											? 'bg-[#FF7A00] text-white shadow-lg scale-105'
-											: 'bg-white text-gray-600 border-2 border-gray-200 hover:border-[#FF7A00] hover:text-[#FF7A00]'
+											? 'bg-[#FF7A00] text-white border-[#FF7A00] shadow-[4px_4px_0_#00AEEF] scale-105'
+											: 'bg-white text-gray-700 border-[#00AEEF] shadow-[4px_4px_0_#FFDA00] hover:shadow-[6px_6px_0_#FFDA00] hover:scale-105'
 									}`}
 								>
 									<span className="flex items-center gap-1">
@@ -517,7 +542,7 @@ export default function GeoThinkrPage() {
 							))}
 						</div>
 						{timeLimit !== null && (
-							<p className="text-xs text-gray-400 mt-2">Faster answers earn up to +200 bonus points!</p>
+							<p className="text-xs text-[#00AEEF] mt-3 font-semibold">Faster answers earn up to +200 bonus points!</p>
 						)}
 					</div>
 
@@ -526,22 +551,22 @@ export default function GeoThinkrPage() {
 							onClick={() => startGame("easy")}
 							className="w-full bg-white border-4 border-[#00AEEF] text-[#00AEEF] rounded-2xl p-6 shadow-[6px_6px_0_#FF7A00] hover:shadow-[8px_8px_0_#FF7A00] hover:scale-[1.02] transition-all"
 						>
-							<div className="text-2xl font-bold">Easy</div>
-							<div className="text-sm text-gray-600">Wider scoring radius</div>
+							<div className="text-2xl font-extrabold drop-shadow-[1px_1px_#FFDA00]">Easy</div>
+							<div className="text-sm text-gray-600 font-semibold">Wider scoring radius</div>
 						</button>
 						<button
 							onClick={() => startGame("medium")}
 							className="w-full bg-white border-4 border-[#FF7A00] text-[#FF7A00] rounded-2xl p-6 shadow-[6px_6px_0_#00AEEF] hover:shadow-[8px_8px_0_#00AEEF] hover:scale-[1.02] transition-all"
 						>
-							<div className="text-2xl font-bold">Medium</div>
-							<div className="text-sm text-gray-600">Standard scoring</div>
+							<div className="text-2xl font-extrabold drop-shadow-[1px_1px_#FFDA00]">Medium</div>
+							<div className="text-sm text-gray-600 font-semibold">Standard scoring</div>
 						</button>
 						<button
 							onClick={() => startGame("hard")}
 							className="w-full bg-white border-4 border-[#FFDA00] text-[#FF7A00] rounded-2xl p-6 shadow-[6px_6px_0_#FF7A00] hover:shadow-[8px_8px_0_#FF7A00] hover:scale-[1.02] transition-all"
 						>
-							<div className="text-2xl font-bold">Hard</div>
-							<div className="text-sm text-gray-600">Tight scoring radius</div>
+							<div className="text-2xl font-extrabold drop-shadow-[1px_1px_#FFDA00]">Hard</div>
+							<div className="text-sm text-gray-600 font-semibold">Tight scoring radius</div>
 						</button>
 					</div>
 				</div>
@@ -551,20 +576,22 @@ export default function GeoThinkrPage() {
 
 	if (gameState === 'loading') {
 		return (
-			<div className="flex h-screen items-center justify-center bg-gray-50">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7A00]"></div>
+			<div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 relative overflow-hidden">
+				<BackgroundPattern />
+				<div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FF7A00] border-t-transparent relative z-10"></div>
 			</div>
 		);
 	}
 
 	if (gameState === 'empty') {
 		return (
-			<div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex-col gap-4 text-center p-4">
-				<div className="bg-white p-8 rounded-2xl shadow-lg border-4 border-[#00AEEF] max-w-md">
-					<Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-					<h2 className="text-2xl font-bold text-[#FF7A00] mb-2">No Active Challenges</h2>
-					<p className="text-gray-500 mb-6">There are no mystery photos to guess right now. Check back later!</p>
-					<button onClick={handleNewGame} className="bg-[#FF7A00] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#FF9500] transition-all">Back to Menu</button>
+			<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex-col gap-4 text-center p-4 relative overflow-hidden">
+				<BackgroundPattern />
+				<div className="bg-white p-8 rounded-2xl border-4 border-[#00AEEF] shadow-[8px_8px_0_#FF7A00] max-w-md relative z-10">
+					<Trophy className="w-16 h-16 text-[#FFDA00] mx-auto mb-4" />
+					<h2 className="text-2xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-2">No Active Challenges</h2>
+					<p className="text-gray-600 font-semibold mb-6">There are no mystery photos to guess right now. Check back later!</p>
+					<button onClick={handleNewGame} className="bg-[#FF7A00] text-white px-6 py-3 rounded-2xl font-bold border-4 border-[#FF7A00] shadow-[4px_4px_0_#00AEEF] hover:shadow-[6px_6px_0_#00AEEF] hover:scale-105 transition-all">Back to Menu</button>
 				</div>
 			</div>
 		);
@@ -572,9 +599,12 @@ export default function GeoThinkrPage() {
 
 	if (gameState === 'error') {
 		return (
-			<div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex-col gap-4">
-				<p className="text-xl font-bold text-[#FF7A00]">Something went wrong!</p>
-				<button onClick={() => loadNewGame(sessionPhotoIds)} className="bg-[#FF7A00] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#FF9500] transition-all">Try Again</button>
+			<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex-col gap-4 relative overflow-hidden">
+				<BackgroundPattern />
+				<div className="bg-white p-8 rounded-2xl border-4 border-[#FF7A00] shadow-[8px_8px_0_#00AEEF] max-w-md text-center relative z-10">
+					<p className="text-xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-4">Something went wrong!</p>
+					<button onClick={() => loadNewGame(sessionPhotoIds)} className="bg-[#FF7A00] text-white px-6 py-3 rounded-2xl font-bold border-4 border-[#FF7A00] shadow-[4px_4px_0_#00AEEF] hover:shadow-[6px_6px_0_#00AEEF] hover:scale-105 transition-all">Try Again</button>
+				</div>
 			</div>
 		);
 	}
@@ -586,12 +616,13 @@ export default function GeoThinkrPage() {
 		const roundsPlayed = roundResults.length;
 
 		return (
-			<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center justify-center p-4">
-				<div className="max-w-lg w-full">
-					<div className="bg-white rounded-2xl shadow-lg border-4 border-[#FF7A00] p-8 text-center">
+			<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+				<BackgroundPattern />
+				<div className="max-w-lg w-full relative z-10">
+					<div className="bg-white rounded-2xl border-4 border-[#FF7A00] shadow-[8px_8px_0_#00AEEF] p-8 text-center">
 						<Trophy className="w-16 h-16 text-[#FFDA00] mx-auto mb-4" />
-						<h1 className="text-3xl font-black text-[#FF7A00] mb-1">Game Complete!</h1>
-						<p className="text-gray-500 mb-6">{roundsPlayed} round{roundsPlayed !== 1 ? 's' : ''} played · {difficulty?.toUpperCase()} difficulty</p>
+						<h1 className="text-4xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-1">Game Complete!</h1>
+						<p className="text-[#00AEEF] font-semibold mb-6">{roundsPlayed} round{roundsPlayed !== 1 ? 's' : ''} played · {difficulty?.toUpperCase()} difficulty</p>
 
 						{/* Total Score */}
 						<div className="bg-gradient-to-r from-[#FF7A00] to-[#FFDA00] rounded-2xl p-6 mb-6 text-white">
@@ -626,13 +657,13 @@ export default function GeoThinkrPage() {
 						<div className="flex gap-3">
 							<button
 								onClick={() => handleShare(totalScore, maxPossible)}
-								className="flex-1 bg-[#00AEEF] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#0096D6] hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-2"
+								className="flex-1 bg-[#00AEEF] text-white py-4 rounded-2xl font-bold text-lg border-4 border-[#00AEEF] shadow-[5px_5px_0_#FFDA00] hover:shadow-[7px_7px_0_#FFDA00] hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
 							>
 								{copied ? <><Check className="w-5 h-5" /> Copied!</> : <><Share2 className="w-5 h-5" /> Share</>}
 							</button>
 							<button
 								onClick={handleNewGame}
-								className="flex-1 bg-[#FF7A00] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#FF9500] hover:scale-[1.02] transition-all shadow-lg flex items-center justify-center gap-2"
+								className="flex-1 bg-[#FF7A00] text-white py-4 rounded-2xl font-bold text-lg border-4 border-[#FF7A00] shadow-[5px_5px_0_#00AEEF] hover:shadow-[7px_7px_0_#00AEEF] hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
 							>
 								<RefreshCw className="w-5 h-5" /> Play Again
 							</button>
@@ -646,45 +677,46 @@ export default function GeoThinkrPage() {
 	const zoom = getMapZoom(difficulty);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center p-4">
+		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex flex-col items-center p-4 relative overflow-hidden">
+			<BackgroundPattern />
 			{/* Header */}
-			<div className="w-full max-w-4xl flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2">
+			<div className="w-full max-w-4xl flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2 bg-white rounded-2xl border-4 border-[#FF7A00] shadow-[6px_6px_0_#00AEEF] px-4 py-3 relative z-10">
 				<div className="flex items-center gap-2 md:gap-3">
 					<Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-[#FF7A00]" />
-					<h1 className="text-lg md:text-2xl font-black text-[#FF7A00]">GeoThinkr</h1>
-					<span className={`text-xs font-bold px-2 py-1 rounded-full ${
-						difficulty === 'easy' ? 'bg-[#00AEEF]/10 text-[#00AEEF]' :
-						difficulty === 'medium' ? 'bg-[#FF7A00]/10 text-[#FF7A00]' :
-						'bg-red-100 text-red-700'
+					<h1 className="text-lg md:text-2xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00]">GeoThinkr</h1>
+					<span className={`text-xs font-bold px-2 py-1 rounded-full border-2 ${
+						difficulty === 'easy' ? 'bg-[#00AEEF]/10 text-[#00AEEF] border-[#00AEEF]' :
+						difficulty === 'medium' ? 'bg-[#FF7A00]/10 text-[#FF7A00] border-[#FF7A00]' :
+						'bg-red-100 text-red-700 border-red-300'
 					}`}>{difficulty?.toUpperCase()}</span>
 				</div>
 				<div className="flex items-center gap-2 md:gap-4">
 					{/* Round Counter */}
-					<span className="text-xs md:text-sm font-bold text-gray-600">
+					<span className="text-xs md:text-sm font-bold text-[#00AEEF] bg-[#FFF6D8] px-3 py-1 rounded-xl border-2 border-[#00AEEF]">
 						{currentRound}/{TOTAL_ROUNDS}
 					</span>
 
 					{/* Timer Display */}
 					{timeLimit !== null && gameState === 'playing' && timeRemaining !== null && (
-						<span className={`font-mono font-bold text-sm md:text-lg px-2 md:px-3 py-1 rounded-full ${
+						<span className={`font-mono font-bold text-sm md:text-lg px-2 md:px-3 py-1 rounded-xl border-2 ${
 							timeRemaining <= 10
-								? 'bg-red-100 text-red-600 animate-pulse'
-								: 'bg-gray-100 text-gray-700'
+								? 'bg-red-100 text-red-600 border-red-300 animate-pulse'
+								: 'bg-[#FFF6D8] text-[#FF7A00] border-[#FF7A00]'
 						}`}>
 							<Clock className="w-3 h-3 md:w-4 md:h-4 inline mr-1" />
 							{timeRemaining}s
 						</span>
 					)}
 
-					<button onClick={handleNewGame} className="text-[#00AEEF] hover:text-[#0096D6] font-bold text-sm md:text-base">Menu</button>
+					<button onClick={handleNewGame} className="bg-[#00AEEF] text-white px-3 md:px-4 py-1.5 rounded-xl border-2 border-[#00AEEF] shadow-[3px_3px_0_#FFDA00] hover:shadow-[5px_5px_0_#FFDA00] hover:scale-105 transition-all font-bold text-sm md:text-base">Menu</button>
 				</div>
 			</div>
 
 			{/* Game Content */}
-			<div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 md:h-[80vh]">
+			<div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 md:h-[80vh] relative z-10">
 
 				{/* Photo Side */}
-				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#FF7A00] overflow-hidden relative flex flex-col min-h-[40vh] md:min-h-0">
+				<div className="bg-white rounded-2xl border-4 border-[#FF7A00] shadow-[8px_8px_0_#00AEEF] overflow-hidden relative flex flex-col min-h-[40vh] md:min-h-0">
 					<div className="flex-1 relative bg-black">
 						{photo && (
 							<img
@@ -764,7 +796,7 @@ export default function GeoThinkrPage() {
 
 								<button
 									onClick={handleNextRound}
-									className="mt-3 md:mt-6 bg-[#FF7A00] text-white px-6 md:px-8 py-2 md:py-3 rounded-full font-bold text-sm md:text-lg hover:bg-[#FF9500] hover:scale-105 transition-all shadow-lg flex items-center gap-2 mx-auto"
+									className="mt-3 md:mt-6 bg-[#FF7A00] text-white px-6 md:px-8 py-2 md:py-3 rounded-2xl font-bold text-sm md:text-lg border-4 border-[#FF7A00] shadow-[5px_5px_0_#00AEEF] hover:shadow-[7px_7px_0_#00AEEF] hover:scale-105 transition-all flex items-center gap-2 mx-auto"
 								>
 									<RefreshCw className="w-5 h-5" />
 									{currentRound >= TOTAL_ROUNDS ? "See Results" : `Next Round (${currentRound}/${TOTAL_ROUNDS})`}
@@ -775,7 +807,7 @@ export default function GeoThinkrPage() {
 				</div>
 
 				{/* Map Side */}
-				<div className="bg-white rounded-2xl shadow-lg border-4 border-[#00AEEF] p-2 relative overflow-hidden flex flex-col items-center justify-center">
+				<div className="bg-white rounded-2xl border-4 border-[#00AEEF] shadow-[8px_8px_0_#FF7A00] p-2 relative overflow-hidden flex flex-col items-center justify-center">
 					<div
 						className={`relative rounded-xl overflow-hidden border-4 border-gray-200 group shadow-inner ${
 							isDragging ? 'cursor-grabbing' : 'cursor-crosshair'

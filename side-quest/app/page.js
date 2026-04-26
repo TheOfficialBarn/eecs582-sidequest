@@ -40,14 +40,24 @@ export default function Home() {
 	}, []);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex items-center justify-center p-8 overflow-hidden relative">
+		<div className="min-h-screen bg-gradient-to-br from-[#FFF6D8] via-yellow-50 to-orange-50 flex items-start justify-center p-8 overflow-hidden relative">
 
-			{/* SECTION: Animated Background Blobs (pure visual flair) */}
-			<div className="absolute inset-0 overflow-hidden pointer-events-none">
-				{/* Each blob fades in after mount via conditional opacity classes */}
-				<div className={`absolute top-20 left-10 w-20 h-20 bg-[#00AEEF] opacity-20 rounded-full blur-xl transition-opacity duration-1000 ${mounted ? 'opacity-20' : 'opacity-0'}`}></div>
-				<div className={`absolute top-40 right-20 w-32 h-32 bg-[#FF7A00] opacity-20 rounded-full blur-xl transition-opacity duration-1000 delay-300 ${mounted ? 'opacity-20' : 'opacity-0'}`}></div>
-				<div className={`absolute bottom-32 left-1/4 w-24 h-24 bg-[#FFDA00] opacity-20 rounded-full blur-xl transition-opacity duration-1000 delay-500 ${mounted ? 'opacity-20' : 'opacity-0'}`}></div>
+			{/* SECTION: Background — notebook-dot grid + sticker shapes (fades in on mount) */}
+			<div className={`absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+				<div
+					className="absolute inset-0"
+					style={{
+						backgroundImage: 'radial-gradient(circle, rgba(255,122,0,0.18) 1.5px, transparent 1.5px)',
+						backgroundSize: '28px 28px',
+					}}
+				/>
+				<div className="absolute top-[8%] left-[6%] w-6 h-6 bg-[#FF7A00] rotate-12 shadow-[3px_3px_0_#FFDA00]" />
+				<div className="absolute top-[14%] right-[8%] w-8 h-8 bg-[#00AEEF] rounded-full shadow-[3px_3px_0_#FF7A00]" />
+				<div className="absolute top-[42%] left-[4%] w-5 h-5 bg-[#FFDA00] rotate-45 shadow-[3px_3px_0_#00AEEF]" />
+				<div className="absolute top-[50%] right-[5%] w-7 h-7 bg-[#FF7A00] rounded-full shadow-[3px_3px_0_#FFDA00]" />
+				<div className="absolute bottom-[18%] left-[14%] w-7 h-7 bg-[#00AEEF] rotate-45 shadow-[3px_3px_0_#FF7A00]" />
+				<div className="absolute bottom-[10%] right-[22%] w-6 h-6 bg-[#FFDA00] rotate-12 shadow-[3px_3px_0_#00AEEF]" />
+				<div className="absolute bottom-[28%] right-[40%] w-5 h-5 bg-[#FF7A00] rounded-full shadow-[3px_3px_0_#FFDA00]" />
 			</div>
 
 			{/* SECTION: Main Content Wrapper */}
@@ -63,12 +73,12 @@ export default function Home() {
 				</div>
 
 				{/* TITLE: Hero heading */}
-				<h1 className={`text-8xl font-extrabold text-[#FF7A00] drop-shadow-[3px_3px_#FFDA00] mb-4 transition-opacity duration-700 delay-100 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+				<h1 className={`text-6xl font-extrabold text-[#FF7A00] drop-shadow-[3px_3px_#FFDA00] mb-4 transition-opacity duration-700 delay-100 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 					Side Quest
 				</h1>
 
 				{/* SUBTITLE: Marketing tagline */}
-				<p className={`text-xl text-[#00AEEF] mb-12 max-w-3xl mx-auto transition-opacity duration-700 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+				<p className={`text-lg text-[#00AEEF] mb-12 max-w-3xl mx-auto transition-opacity duration-700 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 					Explore KU campus, complete epic challenges, earn achievements, and dominate the leaderboard.
 				</p>
 

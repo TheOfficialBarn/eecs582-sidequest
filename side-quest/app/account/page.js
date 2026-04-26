@@ -41,61 +41,62 @@ export default async function AccountPage() {
 
 	const supabase = createAdminClient();
 
-	// Fetch refreshed user data to get profile picture and points
-	const { data: dbUser } = await supabase
-		.from("users")
-		.select("profile_picture_url, points")
-		.eq("user_id", user.id)
-		.single();
+	// All six queries are independent — fan them out in parallel so the page
+	// only blocks for the slowest one rather than the sum of all six.
+	const [
+		{ data: dbUser },
+		{ data: allQuests },
+		{ data: progress },
+		{ data: geoHistory },
+		{ data: allAchievements },
+		{ data: earnedAchievements },
+	] = await Promise.all([
+		supabase
+			.from("users")
+			.select("profile_picture_url, points")
+			.eq("user_id", user.id)
+			.single(),
+		supabase
+			.from("quests")
+			.select("quest_id, text, location_id, locations(name)"),
+		supabase
+			.from("progress")
+			.select(`
+				quest_id,
+				completed,
+				completed_at,
+				quests (
+					quest_id,
+					text,
+					location_id,
+					locations (
+						location_id,
+						name
+					)
+				)
+			`)
+			.eq("user_id", user.id)
+			.eq("completed", true),
+		supabase
+			.from("geothinkr_history")
+			.select("points_awarded")
+			.eq("user_id", user.id),
+		supabase
+			.from("achievements")
+			.select("achievement_id, key, name, description, icon"),
+		supabase
+			.from("user_achievements")
+			.select("achievement_id, earned_at")
+			.eq("user_id", user.id),
+	]);
 
 	const profilePicture = dbUser?.profile_picture_url || "https://api.dicebear.com/9.x/avataaars/svg?seed=Default";
 	const points = dbUser?.points || 0;
-
-	// Get all quests to calculate total
-	const { data: allQuests } = await supabase
-		.from("quests")
-		.select("quest_id, text, location_id, locations(name)");
-
-	// Get user's completed progress
-	const { data: progress } = await supabase
-		.from("progress")
-		.select(`
-			quest_id,
-			completed,
-			completed_at,
-			quests (
-				quest_id,
-				text,
-				location_id,
-				locations (
-					location_id,
-					name
-				)
-			)
-		`)
-		.eq("user_id", user.id)
-		.eq("completed", true);
-
-	// Fetch GeoThinkr stats
-	const { data: geoHistory } = await supabase
-		.from("geothinkr_history")
-		.select("points_awarded")
-		.eq("user_id", user.id);
 
 	const geoTotalGames = geoHistory?.length || 0;
 	const geoSpotOns = geoHistory?.filter(h => h.points_awarded >= 500).length || 0;
 	const geoTotalPoints = geoHistory?.reduce((sum, h) => sum + h.points_awarded, 0) || 0;
 	const geoAccuracy = geoTotalGames > 0 ? Math.round((geoSpotOns / geoTotalGames) * 100) : 0;
-
-	// Fetch achievements
-	const { data: allAchievements } = await supabase
-		.from("achievements")
-		.select("achievement_id, key, name, description, icon");
-
-	const { data: earnedAchievements } = await supabase
-		.from("user_achievements")
-		.select("achievement_id, earned_at")
-		.eq("user_id", user.id);
 
 	const earnedMap = {};
 	earnedAchievements?.forEach(e => { earnedMap[e.achievement_id] = e.earned_at; });
@@ -143,7 +144,7 @@ export default async function AccountPage() {
 		<div className="max-w-4xl mx-auto p-8">
 			{/* Account Info Section */}
 			<div className="mb-8 text-[#FF7A00]">
-				<h2 className="text-3xl font-bold mb-4">Account</h2>
+				<h2 className="text-4xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-4">Account</h2>
 				<div className="bg-white rounded-lg shadow-md p-6 mb-6 flex flex-col md:flex-row items-center gap-6">
 					<div className="relative group">
 						<img
@@ -188,7 +189,7 @@ export default async function AccountPage() {
 
 			{/* Quest Progress Dashboard */}
 			<div className="mb-8">
-				<h2 className="text-3xl font-bold mb-4 text-[#FF7A00] flex items-center gap-2">
+				<h2 className="text-4xl font-extrabold mb-4 text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] flex items-center gap-2">
 					<Trophy className="w-8 h-8" />
 					Quest Progress
 				</h2>

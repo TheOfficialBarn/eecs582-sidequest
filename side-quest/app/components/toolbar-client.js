@@ -14,7 +14,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Map, Compass, Trophy, User, LogOut, Menu, Brain, X, ShoppingBag, Coins, Lightbulb, Swords } from "lucide-react";
+
+const DEFAULT_AVATAR = "https://api.dicebear.com/9.x/avataaars/svg?seed=Default";
 import NotificationButton from "./NotificationButton";
 
 /*
@@ -31,6 +34,11 @@ import NotificationButton from "./NotificationButton";
 export default function ToolbarClient({ user }) {
 	const [mobileOpen, setMobileOpen] = useState(false); // mobile if window is too small
 	const panelRef = useRef(null);
+
+	// On the leaderboard route, swap the cyan toolbar for a moody dark version
+	// so the navbar reads as part of the same HUD environment as the page.
+	const pathname = usePathname();
+	const isDark = pathname?.startsWith("/leaderboard");
 
 	// Turn it into a hamburger menu if the window is too small (for phones)
 	useEffect(() => {
@@ -67,7 +75,11 @@ export default function ToolbarClient({ user }) {
 	}, [user?.points]);
 
 	return (
-		<nav className="sticky top-0 z-50 w-full flex items-center justify-between bg-gradient-to-r from-[#00AEEF] to-[#0096D6] text-white px-4 md:px-8 py-3 shadow-lg">
+		<nav className={`sticky top-0 z-50 w-full flex items-center justify-between text-white px-4 md:px-8 py-3 shadow-lg transition-colors ${
+			isDark
+				? "bg-gradient-to-r from-[#1a0d05] via-[#0a0e14] to-[#1a0d05] border-b border-[#FF7A00]/30 shadow-[0_4px_20px_rgba(255,122,0,0.15)]"
+				: "bg-gradient-to-r from-[#00AEEF] to-[#0096D6]"
+		}`}>
 			<Link href="/" className="flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">
 				<div className="relative">
 					<Map className="w-7 h-7 text-[#FFDA00] drop-shadow-lg group-hover:rotate-[-12deg] transition-transform duration-300" />
@@ -81,11 +93,11 @@ export default function ToolbarClient({ user }) {
 			{/* Navigation Links - visible on lg screens and above */}
 			<div className="hidden lg:flex items-center gap-0.5 xl:gap-2 text-sm xl:text-base font-semibold flex-shrink min-w-0">
 				<Link href="/map" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Map className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Map</Link>
+				<Link href="/geothinkr" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Lightbulb className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">GeoThinkr</span><span className="xl:hidden">Geo</span></Link>
+				<Link href="/multiplayer" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Swords className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">Multiplayer</span><span className="xl:hidden">Multi</span></Link>
 				<Link href="/quests" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Compass className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Quests</Link>
 				<Link href="/leaderboard" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Trophy className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">Leaderboard</span><span className="xl:hidden">Board</span></Link>
 				<Link href="/shop" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <ShoppingBag className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Shop</Link>
-				<Link href="/multiplayer" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Swords className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">Multiplayer</span><span className="xl:hidden">Multi</span></Link>
-				<Link href="/geothinkr" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Lightbulb className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> <span className="hidden xl:inline">GeoThinkr</span><span className="xl:hidden">Geo</span></Link>
 				{/* Admin tab is only visible if user is admin*/}
 				{user?.is_admin && (
 					<Link href="/admin" className="group flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg hover:bg-white/10 hover:text-[#FFDA00] transition-all duration-200 whitespace-nowrap"> <Brain className="w-4 h-4 xl:w-5 xl:h-5 flex-shrink-0" /> Admin</Link>
@@ -112,11 +124,15 @@ export default function ToolbarClient({ user }) {
 							<span>{user.points || 0}</span>
 						</div>
 						<Link href="/account" className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all cursor-pointer">
-							<User className="w-4 h-4" />
+							<img
+								src={user.profile_picture_url || DEFAULT_AVATAR}
+								alt="Profile"
+								className="w-6 h-6 rounded-full object-cover bg-white/20 border border-white/30 flex-shrink-0"
+							/>
 							<span>{user.name || user.email}</span>
 						</Link>
 						<form action="/api/auth/logout" method="post">
-							<button type="submit" className="bg-transparent hover:bg-[#00AEEF] text-white p-3 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center group" title="Logout">
+							<button type="submit" className={`bg-transparent text-white p-3 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center group ${isDark ? "hover:bg-[#FF7A00]/30" : "hover:bg-[#00AEEF]"}`} title="Logout">
 								<LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
 							</button>
 						</form>
@@ -130,23 +146,31 @@ export default function ToolbarClient({ user }) {
 
 			{/* Mobile panel */}
 			{mobileOpen && (
-				<div ref={panelRef} className="lg:hidden absolute top-full left-0 right-0 bg-white text-[#0b3b4a] shadow-lg py-3 z-50">
+				<div ref={panelRef} className={`lg:hidden absolute top-full left-0 right-0 shadow-lg py-3 z-50 ${
+					isDark
+						? "bg-[#0a0e14] text-white border-t border-[#FF7A00]/30"
+						: "bg-white text-[#0b3b4a]"
+				}`}>
 					<div className="flex flex-col px-4 gap-2">
-						<Link href="/map" className="px-3 py-2 rounded-md hover:bg-gray-100">Map</Link>
-						<Link href="/quests" className="px-3 py-2 rounded-md hover:bg-gray-100">Quests</Link>
-						<Link href="/leaderboard" className="px-3 py-2 rounded-md hover:bg-gray-100">Leaderboard</Link>
-						<Link href="/shop" className="px-3 py-2 rounded-md hover:bg-gray-100">Shop</Link>
-						<Link href="/multiplayer" className="px-3 py-2 rounded-md hover:bg-gray-100">Multiplayer</Link>
-						<Link href="/geothinkr" className="px-3 py-2 rounded-md hover:bg-gray-100">GeoThinkr</Link>
+						<Link href="/map" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Map</Link>
+						<Link href="/geothinkr" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>GeoThinkr</Link>
+						<Link href="/multiplayer" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Multiplayer</Link>
+						<Link href="/quests" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Quests</Link>
+						<Link href="/leaderboard" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Leaderboard</Link>
+						<Link href="/shop" className={`px-3 py-2 rounded-md ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Shop</Link>
 						{/* Admin tab is only visible if user is admin*/}
 						{user?.is_admin && (
-							<Link href="/admin" className="px-3 py-2 rounded-md hover:bg-gray-100 font-medium">Admin</Link>
+							<Link href="/admin" className={`px-3 py-2 rounded-md font-medium ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}>Admin</Link>
 						)}
-						<div className="border-t mt-2 pt-2">
+						<div className={`mt-2 pt-2 border-t ${isDark ? "border-white/10" : ""}`}>
 							{user ? (
 								<div className="flex items-center justify-between">
 									<Link href="/account" className="flex items-center gap-3 hover:text-[#FFDA00] transition-colors">
-										<User className="w-5 h-5" />
+										<img
+											src={user.profile_picture_url || DEFAULT_AVATAR}
+											alt="Profile"
+											className="w-8 h-8 rounded-full object-cover bg-gray-100 border border-gray-200 flex-shrink-0"
+										/>
 										<div>
 											<div className="font-medium">{user.name || user.email}</div>
 										</div>
