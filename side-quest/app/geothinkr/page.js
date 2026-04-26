@@ -787,8 +787,9 @@ export default function GeoThinkrPage() {
 								{result.achievements_earned && result.achievements_earned.length > 0 && (
 									<div className="mt-3 flex justify-center gap-2 flex-wrap">
 										{result.achievements_earned.map(key => (
-											<span key={key} className="bg-[#FFDA00] text-gray-800 text-xs font-bold px-3 py-1 rounded-full">
-												🏆 Achievement Unlocked: {key.replace(/_/g, ' ')}
+											<span key={key} className="bg-[#FFDA00] text-gray-800 text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1">
+												<Trophy className="w-3.5 h-3.5" fill="currentColor" />
+												Achievement Unlocked: {key.replace(/_/g, ' ')}
 											</span>
 										))}
 									</div>

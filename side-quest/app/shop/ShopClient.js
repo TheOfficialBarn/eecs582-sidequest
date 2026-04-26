@@ -75,8 +75,8 @@ export default function ShopClient({ initialUser }) {
 	return (
 		<div className="space-y-8">
 			{/* Current Avatar Section */}
-			<div className="flex flex-col items-center justify-center mb-8 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
-				<h3 className="text-xl font-bold text-gray-800 mb-4">Current Avatar</h3>
+			<div className="flex flex-col items-center justify-center mb-8 p-6 bg-white rounded-2xl border-4 border-[#FF7A00] shadow-[6px_6px_0_#00AEEF]">
+				<h3 className="text-xl font-extrabold text-[#FF7A00] drop-shadow-[1px_1px_#FFDA00] mb-4">Current Avatar</h3>
 				<div className="relative">
 					<img
 						src={user.profile_picture_url || "https://api.dicebear.com/9.x/avataaars/svg?seed=Default"}
@@ -84,7 +84,7 @@ export default function ShopClient({ initialUser }) {
 						className="w-32 h-32 rounded-full border-4 border-[#FF7A00] object-cover bg-gray-100"
 					/>
 					<label
-						className="absolute bottom-0 right-0 bg-[#00AEEF] text-white p-2 rounded-full cursor-pointer hover:bg-[#0096D6] transition-colors shadow-md"
+						className="absolute bottom-0 right-0 bg-[#00AEEF] text-white p-2 rounded-full cursor-pointer hover:bg-[#0096D6] transition-colors border-2 border-white"
 						title="Upload Custom Avatar"
 					>
 						{uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
@@ -97,14 +97,14 @@ export default function ShopClient({ initialUser }) {
 						/>
 					</label>
 				</div>
-				<p className="text-sm text-gray-500 mt-2">
+				<p className="text-sm text-[#00AEEF] font-semibold mt-2">
 					{uploading ? "Uploading..." : "Click icon to upload custom"}
 				</p>
 			</div>
 
 			{/* Shop Grid */}
 			<div>
-				<h2 className="text-2xl font-bold text-[#FF7A00] mb-6 flex items-center gap-2">
+				<h2 className="text-2xl font-extrabold text-[#FF7A00] drop-shadow-[2px_2px_#FFDA00] mb-6 flex items-center gap-2">
 					<ShoppingBag className="w-6 h-6" />
 					Avatar Shop
 				</h2>
@@ -119,25 +119,25 @@ export default function ShopClient({ initialUser }) {
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
 								className={`
-                                    relative p-4 rounded-xl border-2 transition-all cursor-pointer bg-white shadow-sm flex flex-col items-center gap-3
-                                    ${isSelected ? 'border-green-500 ring-2 ring-green-100' : 'border-transparent hover:border-[#00AEEF]'}
+                                    relative p-4 rounded-2xl border-4 transition-all cursor-pointer bg-white flex flex-col items-center gap-3
+                                    ${isSelected ? 'border-green-500' : 'border-[#00AEEF] hover:border-[#FF7A00]'}
                                 `}
 								onClick={() => !isSelected && handleSelectAvatar(avatar.url)}
 							>
 								<img src={avatar.url} alt={avatar.name} className="w-20 h-20 rounded-full bg-gray-50" />
 								<div className="text-center">
-									<div className="font-bold text-gray-800">{avatar.name}</div>
-									<div className="text-xs text-gray-500">Free</div>
+									<div className="font-extrabold text-[#FF7A00]">{avatar.name}</div>
+									<div className="text-xs text-[#00AEEF] font-bold uppercase tracking-wider">Free</div>
 								</div>
 
 								{isSelected && (
-									<div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 shadow-sm">
+									<div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 border-2 border-white">
 										<Check className="w-4 h-4" />
 									</div>
 								)}
 
 								{isLoading && (
-									<div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-xl">
+									<div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-2xl">
 										<Loader2 className="w-6 h-6 animate-spin text-[#00AEEF]" />
 									</div>
 								)}

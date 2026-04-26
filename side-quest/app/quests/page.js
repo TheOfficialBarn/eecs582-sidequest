@@ -185,7 +185,7 @@ export default async function QuestsPage() {
 							return (
 								<div
 									key={locationName}
-									className="bg-white rounded-2xl p-4 border-2 border-[#00AEEF] shadow-[4px_4px_0_#FF7A00] transform hover:scale-[1.01] transition-all group"
+									className="bg-white rounded-2xl p-4 border-4 border-[#00AEEF] shadow-[6px_6px_0_#FF7A00] transform hover:scale-[1.01] transition-all group"
 								>
 									{/* Location Header */}
 									<div className="flex items-center justify-between mb-3">
